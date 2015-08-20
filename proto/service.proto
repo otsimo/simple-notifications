@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+package notification;
+
+
+enum Backend {
+    EMAIL = 0;
+    SMS = 1;
+    PUSH = 2;
+}
+
+message Target{
+    Backend backend = 1;
+    map<string, google.protobuf.Any> data = 2;
+}
+
+message Message {
+    string template = 1;
+    string language = 2;   
+    int64 send_at = 3;
+    repeated Target targets = 4;
+}
+
+message SendMessageResponse{
+	int32 type = 1;
+	string data = 2;
+}
+
+service NotificationService {
+    rpc SendMessage (Message) returns (SendMessageResponse);
+}

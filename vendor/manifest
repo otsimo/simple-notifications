@@ -1,0 +1,111 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/bradfitz/http2",
+			"repository": "https://github.com/bradfitz/http2",
+			"revision": "f8202bc903bda493ebba4aa54922d78430c2c42f",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "e1dfcec0abefc28c05de744dee7eea6bbc286471",
+			"branch": "master",
+			"path": "/Godeps/_workspace/src/golang.org/x/net/context"
+		},
+		{
+			"importpath": "github.com/coreos/etcd/client",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "e1dfcec0abefc28c05de744dee7eea6bbc286471",
+			"branch": "master",
+			"path": "/client"
+		},
+		{
+			"importpath": "github.com/coreos/etcd/pkg/pathutil",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "e1dfcec0abefc28c05de744dee7eea6bbc286471",
+			"branch": "master",
+			"path": "/pkg/pathutil"
+		},
+		{
+			"importpath": "github.com/coreos/etcd/pkg/types",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "e1dfcec0abefc28c05de744dee7eea6bbc286471",
+			"branch": "master",
+			"path": "/pkg/types"
+		},
+		{
+			"importpath": "github.com/golang/glog",
+			"repository": "https://github.com/golang/glog",
+			"revision": "fca8c8854093a154ff1eb580aae10276ad6b1b5f",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/proto",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "73aaaa9eb61d74fbf7e256ca586a3a565b308eea",
+			"branch": "master",
+			"path": "/proto"
+		},
+		{
+			"importpath": "github.com/sendgrid/sendgrid-go",
+			"repository": "https://github.com/sendgrid/sendgrid-go",
+			"revision": "186c04acda510e050536deda27d578d80afe775d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/sendgrid/smtpapi-go",
+			"repository": "https://github.com/sendgrid/smtpapi-go",
+			"revision": "08102729bcf72bfe74dde6c0da8e0423e94090ca",
+			"branch": "master"
+		},
+		{
+			"importpath": "golang.org/x/net/context",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "66f0418ca41253f8d1a024eb9754e9441a8e79b9",
+			"branch": "master",
+			"path": "/context"
+		},
+		{
+			"importpath": "golang.org/x/net/internal/timeseries",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "66f0418ca41253f8d1a024eb9754e9441a8e79b9",
+			"branch": "master",
+			"path": "/internal/timeseries"
+		},
+		{
+			"importpath": "golang.org/x/net/trace",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "66f0418ca41253f8d1a024eb9754e9441a8e79b9",
+			"branch": "master",
+			"path": "/trace"
+		},
+		{
+			"importpath": "golang.org/x/oauth2",
+			"repository": "https://go.googlesource.com/oauth2",
+			"revision": "397fe7649477ff2e8ced8fc0b2696f781e53745a",
+			"branch": "master"
+		},
+		{
+			"importpath": "google.golang.org/cloud/compute/metadata",
+			"repository": "https://code.googlesource.com/gocloud",
+			"revision": "c8de7fb24e8f427e2a56ffe08fcf0f6791228595",
+			"branch": "master",
+			"path": "/compute/metadata"
+		},
+		{
+			"importpath": "google.golang.org/cloud/internal",
+			"repository": "https://code.googlesource.com/gocloud",
+			"revision": "c8de7fb24e8f427e2a56ffe08fcf0f6791228595",
+			"branch": "master",
+			"path": "/internal"
+		},
+		{
+			"importpath": "google.golang.org/grpc",
+			"repository": "https://github.com/grpc/grpc-go",
+			"revision": "69288679b31db51fb46d8cc069eeb7cf57183eac",
+			"branch": "master"
+		}
+	]
+}

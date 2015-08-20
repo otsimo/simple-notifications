@@ -1,0 +1,16 @@
+drivers:
+  - type: sms
+    provider: twilio
+    config:
+      - apikey: asd
+      - apiToken: asd
+  - type: email
+    provider: sendgrid
+    config:
+      - apikey: asd
+  - type: push
+    provider: onesignal
+    config:
+      - apiToken: asd
+templatePath: ./templates
+
