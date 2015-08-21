@@ -1,12 +1,20 @@
 package drivers
-import "fmt"
+import (
+	"fmt"
+)
 
 type Driver interface{
 
 }
 
+const (
+	TypeEmail string = "email"
+	TypeSms string = "sms"
+	TypePush string = "push"
+)
 type RegisteredDriver struct {
-	New func() (Driver, error)
+	Type string
+	New  func() (Driver, error)
 }
 
 var drivers map[string]*RegisteredDriver
@@ -21,4 +29,13 @@ func Register(name string, rd *RegisteredDriver) error {
 	}
 	drivers[name] = rd;
 	return nil
+}
+
+func GetDrivers() map[string]string {
+	drives := make(map[string]string, 0)
+
+	for name, d := range (drivers) {
+		drives[name] = d.Type
+	}
+	return drives
 }

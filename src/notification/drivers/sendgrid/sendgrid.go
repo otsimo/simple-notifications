@@ -5,6 +5,7 @@ import "notification/drivers"
 
 func init() {
 	drivers.Register("sendgrid", &drivers.RegisteredDriver{
+		Type: drivers.TypeEmail,
 		New:newDriver,
 	})
 }

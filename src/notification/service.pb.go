@@ -9,6 +9,9 @@ It is generated from these files:
 	service.proto
 
 It has these top-level messages:
+	Email
+	Sms
+	Push
 	Target
 	Message
 	SendMessageResponse
@@ -24,43 +27,115 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 
-type Backend int32
-
-const (
-	Backend_EMAIL Backend = 0
-	Backend_SMS   Backend = 1
-	Backend_PUSH  Backend = 2
-)
-
-var Backend_name = map[int32]string{
-	0: "EMAIL",
-	1: "SMS",
-	2: "PUSH",
-}
-var Backend_value = map[string]int32{
-	"EMAIL": 0,
-	"SMS":   1,
-	"PUSH":  2,
+type Email struct {
+	ToEmail    []string                        `protobuf:"bytes,1,rep,name=to_email" json:"to_email,omitempty"`
+	ToName     []string                        `protobuf:"bytes,2,rep,name=to_name" json:"to_name,omitempty"`
+	FromEmail  string                          `protobuf:"bytes,3,opt,name=from_email" json:"from_email,omitempty"`
+	FromName   string                          `protobuf:"bytes,4,opt,name=from_name" json:"from_name,omitempty"`
+	Subject    string                          `protobuf:"bytes,5,opt,name=subject" json:"subject,omitempty"`
+	Parameters map[string]*google_protobuf.Any `protobuf:"bytes,6,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Data       map[string]*google_protobuf.Any `protobuf:"bytes,7,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 }
 
-func (x Backend) String() string {
-	return proto.EnumName(Backend_name, int32(x))
+func (m *Email) Reset()         { *m = Email{} }
+func (m *Email) String() string { return proto.CompactTextString(m) }
+func (*Email) ProtoMessage()    {}
+
+func (m *Email) GetParameters() map[string]*google_protobuf.Any {
+	if m != nil {
+		return m.Parameters
+	}
+	return nil
+}
+
+func (m *Email) GetData() map[string]*google_protobuf.Any {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type Sms struct {
+	To         []string                        `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
+	Parameters map[string]*google_protobuf.Any `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Data       map[string]*google_protobuf.Any `protobuf:"bytes,3,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+}
+
+func (m *Sms) Reset()         { *m = Sms{} }
+func (m *Sms) String() string { return proto.CompactTextString(m) }
+func (*Sms) ProtoMessage()    {}
+
+func (m *Sms) GetParameters() map[string]*google_protobuf.Any {
+	if m != nil {
+		return m.Parameters
+	}
+	return nil
+}
+
+func (m *Sms) GetData() map[string]*google_protobuf.Any {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type Push struct {
+	To         []string                        `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
+	Parameters map[string]*google_protobuf.Any `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Data       map[string]*google_protobuf.Any `protobuf:"bytes,3,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+}
+
+func (m *Push) Reset()         { *m = Push{} }
+func (m *Push) String() string { return proto.CompactTextString(m) }
+func (*Push) ProtoMessage()    {}
+
+func (m *Push) GetParameters() map[string]*google_protobuf.Any {
+	if m != nil {
+		return m.Parameters
+	}
+	return nil
+}
+
+func (m *Push) GetData() map[string]*google_protobuf.Any {
+	if m != nil {
+		return m.Data
+	}
+	return nil
 }
 
 type Target struct {
-	Backend Backend                         `protobuf:"varint,1,opt,name=backend,enum=notification.Backend" json:"backend,omitempty"`
-	Data    map[string]*google_protobuf.Any `protobuf:"bytes,2,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Email *Email `protobuf:"bytes,1,opt,name=email" json:"email,omitempty"`
+	Sms   *Sms   `protobuf:"bytes,2,opt,name=sms" json:"sms,omitempty"`
+	Push  *Push  `protobuf:"bytes,3,opt,name=push" json:"push,omitempty"`
 }
 
 func (m *Target) Reset()         { *m = Target{} }
 func (m *Target) String() string { return proto.CompactTextString(m) }
 func (*Target) ProtoMessage()    {}
 
-func (m *Target) GetData() map[string]*google_protobuf.Any {
+func (m *Target) GetEmail() *Email {
 	if m != nil {
-		return m.Data
+		return m.Email
+	}
+	return nil
+}
+
+func (m *Target) GetSms() *Sms {
+	if m != nil {
+		return m.Sms
+	}
+	return nil
+}
+
+func (m *Target) GetPush() *Push {
+	if m != nil {
+		return m.Push
 	}
 	return nil
 }
@@ -91,14 +166,6 @@ type SendMessageResponse struct {
 func (m *SendMessageResponse) Reset()         { *m = SendMessageResponse{} }
 func (m *SendMessageResponse) String() string { return proto.CompactTextString(m) }
 func (*SendMessageResponse) ProtoMessage()    {}
-
-func init() {
-	proto.RegisterEnum("notification.Backend", Backend_name, Backend_value)
-}
-
-// Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
 
 // Client API for NotificationService service
 
