@@ -1,0 +1,21 @@
+#!/bin/bash
+
+GOOS=linux
+GOARCH=amd64
+
+echo "target os:" ${GOOS}
+echo "target arch:" ${GOARCH}
+
+GOPATH=$(pwd):$(pwd)/vendor
+
+mkdir bin
+cd bin
+
+if [[ "$OSTYPE" == "msys" ]]; then
+	env GOOS=${GOOS} GOARCH=${amd64} go build main
+else
+	go build main
+fi
+
+
+

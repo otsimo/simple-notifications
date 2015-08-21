@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#todo
+
+docker build -t sercand/notification .
+
+
