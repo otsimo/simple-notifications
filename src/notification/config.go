@@ -10,7 +10,6 @@ type DriverConfig struct {
 
 type Config struct {
 	Port         int "port"
-	Config       string "config"
 	TemplatePath string "templatePath"
 	Drivers      []DriverConfig "drivers"
 }

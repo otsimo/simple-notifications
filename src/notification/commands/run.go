@@ -9,8 +9,6 @@ var runCmd = &cobra.Command{
 	Short: "Run server",
 	Long:  `Run the Server with given config`,
 	Run:   func(cmd *cobra.Command, args []string) {
-		InitializeConfig()
-
 		notification.LoadDrivers(RunConfig)
 		notification.ListenAndServe(RunConfig)
 	},
