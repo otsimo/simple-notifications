@@ -3,17 +3,17 @@ import "fmt"
 import (
 	"text/template"
 	"bytes"
-	"notification/drivers"
+	_ "notification/drivers"
 	_ "notification/drivers/sendgrid"
 	_ "notification/drivers/mandrill"
 	_ "notification/drivers/onesignal"
 	_ "notification/drivers/pushwoosh"
 	_ "notification/drivers/twilio"
 	_ "notification/drivers/mailchimp"
-	"google.golang.org/grpc"
-	"net"
-	"log"
-	"notification"
+	_ "google.golang.org/grpc"
+	_ "net"
+	_ "notification"
+	"notification/commands"
 )
 
 func templateTest() {
@@ -42,23 +42,5 @@ func templateTest() {
 
 }
 func main() {
-	fmt.Println("Hello World!!")
-
-	//templateTest()
-
-	d := drivers.GetDrivers()
-
-	fmt.Println("Drivers:")
-	for n, t := range (d) {
-		fmt.Printf("%s:%s\n", n, t)
-	}
-
-	lis, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	s := grpc.NewServer()
-	notification.RegisterNotificationServiceServer(s, &notification.Server{})
-	s.Serve(lis)
+	commands.Execute()
 }

@@ -11,6 +11,7 @@ const (
 	TypeEmail string = "email"
 	TypeSms string = "sms"
 	TypePush string = "push"
+	TypeScheduler string = "scheduler"
 )
 type RegisteredDriver struct {
 	Type string
