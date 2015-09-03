@@ -26,7 +26,7 @@ var versionCmd = &cobra.Command{
 		} else {
 			formatBuildDate()
 		}
-		fmt.Printf("Api Server v%s BuildDate: %s\n", ApiVersion, BuildDate)
+		fmt.Printf("%s\n", ApiVersion)
 	},
 }
 

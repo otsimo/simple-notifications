@@ -39,8 +39,11 @@ func templateTest() {
 	}else {
 		panic(err)
 	}
-
 }
+
+var Version string
+
 func main() {
+	commands.ApiVersion = Version
 	commands.Execute()
 }

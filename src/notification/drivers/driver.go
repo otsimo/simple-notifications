@@ -3,8 +3,9 @@ import (
 	"fmt"
 )
 
-type Driver interface{
-
+type Driver interface {
+	Name() string
+	Type() string
 }
 
 const (
@@ -13,9 +14,10 @@ const (
 	TypePush string = "push"
 	TypeScheduler string = "scheduler"
 )
+
 type RegisteredDriver struct {
 	Type string
-	New  func() (Driver, error)
+	New  func(map[string]interface{}) (Driver, error)
 }
 
 var drivers map[string]*RegisteredDriver
@@ -39,4 +41,8 @@ func GetDrivers() map[string]string {
 		drives[name] = d.Type
 	}
 	return drives
+}
+
+func GetDriver(name string) *RegisteredDriver {
+	return drivers[name]
 }

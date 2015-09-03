@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"google.golang.org/grpc"
+	"notification/drivers"
 )
 
 type Server struct {}
@@ -27,9 +28,34 @@ func (s *Server) SendMessage(ctx context.Context, in*Message) (*SendMessageRespo
 	return &SendMessageResponse{}, nil
 }
 
-func LoadDrivers(config *Config) error {
-	log.Debugln(config)
-	return nil
+func addDriver(dr drivers.Driver) {
+	if dr == nil {
+		return
+	}
+
+}
+
+func LoadDrivers(config *Config) {
+	log.Debugf("Config is %v", config)
+
+	for _, r := range (config.Drivers) {
+		if driver := drivers.GetDriver(r.Provider); driver != nil {
+			if (driver.Type == r.Type) {
+				dr, err := driver.New(r.Config)
+				if err != nil {
+					log.Errorf("Error while creating %s driver:%v", r.Provider, err)
+				}else if dr == nil {
+					log.Errorf("%s driver is created as nil", r.Provider)
+				}else {
+					addDriver(dr)
+				}
+			}else {
+				log.Errorf("%s named driver is \"%s\" driver in config, but it is actually a \"%s\" driver", r.Provider, r.Type, driver.Type)
+			}
+		}else {
+			log.Errorf("%s named driver not found", r.Provider)
+		}
+	}
 }
 
 func ListenAndServe(config *Config) {

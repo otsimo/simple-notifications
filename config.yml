@@ -12,9 +12,7 @@ drivers:
     provider: onesignal
     config:
       apiToken: asd
-  - type: schedular
-    provider: ~
-
+schedular: ~
 templatePath: ./templates
 port: 1245
 

@@ -1,21 +1,10 @@
 #!/bin/bash
 
-GOOS=linux
-GOARCH=amd64
+APP_VERSION=${APP_VERSION:-$(cat VERSION)}
 
-echo "target os:" ${GOOS}
-echo "target arch:" ${GOARCH}
+NUMBER_OF_COMMIT=$(git rev-list HEAD --count)
+SHA_COMMIT=$(git rev-parse --short HEAD)
+BUILD_DATE=$(date +%Y%m%d-%H%M%S)
+BUILD_VERSION=$APP_VERSION.$NUMBER_OF_COMMIT-$SHA_COMMIT-$BUILD_DATE
 
-GOPATH=$(pwd):$(pwd)/vendor
-
-mkdir bin
-cd bin
-
-if [[ "$OSTYPE" == "msys" ]]; then
-	env GOOS=${GOOS} GOARCH=${amd64} go build main
-else
-	go build main
-fi
-
-
-
+env GOOS=linux GOARCH=amd64 gb build -ldflags "-X main.Version=$BUILD_VERSION"

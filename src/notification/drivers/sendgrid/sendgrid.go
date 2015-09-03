@@ -2,14 +2,31 @@ package sendgrid
 
 import "notification/drivers"
 
+const SendGridDriverName = "sendgrid"
 
 func init() {
-	drivers.Register("sendgrid", &drivers.RegisteredDriver{
+	drivers.Register(SendGridDriverName, &drivers.RegisteredDriver{
 		Type: drivers.TypeEmail,
-		New:newDriver,
+		New: newDriver,
 	})
 }
 
-func newDriver() (drivers.Driver, error) {
-	return nil, nil
+func newDriver(config map[string]interface{}) (drivers.Driver, error) {
+	d := SendGridDriver{}
+
+
+
+	return d, nil
+}
+
+
+type SendGridDriver struct {
+}
+
+func (d SendGridDriver)Name() string {
+	return SendGridDriverName
+}
+
+func (d SendGridDriver)Type() string {
+	return drivers.TypeEmail
 }
