@@ -3,15 +3,15 @@ package notification
 import "fmt"
 
 type DriverConfig struct {
-	Type     string                 "type"
-	Provider string                 "provider"
-	Config   map[string]interface{} "config"
+	Type     string                 `json:"type" yaml:"type"`
+	Provider string                 `json:"provider" yaml:"type"`
+	Config   map[string]interface{} `json:"config" yaml:"type"`
 }
 
 type Config struct {
-	Port         int            "port"
-	TemplatePath string         "templatePath"
-	Drivers      []DriverConfig "drivers"
+	Port         int            `json:"port" yaml:"type"`
+	TemplatePath string         `json:"templatePath" yaml:"type"`
+	Drivers      []DriverConfig `json:"drivers" yaml:"type"`
 }
 
 func (c *Config) GetPortString() string {
