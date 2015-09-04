@@ -1,7 +1,18 @@
 #!/bin/bash
 
-#todo
+DOCKER_IMAGE_NAME=otsimo/simple-notifications
 
-docker build -t sercand/notification .
+DOCKER_OLD_IMAGE=$(docker images | grep $DOCKER_IMAGE_NAME | tail -n1 | awk '{print $3}')
+
+if [ ${#DOCKER_OLD_IMAGE} -gt 0 ]; then
+    docker rmi $DOCKER_OLD_IMAGE
+fi
+
+NUMBER_OF_COMMIT=$(git rev-list HEAD --count)
+APP_VERSION=${APP_VERSION:-$(< ./VERSION)}.$NUMBER_OF_COMMIT
+TAG_NAME=$DOCKER_IMAGE_NAME:$APP_VERSION
 
 
+docker build --rm -t $DOCKER_IMAGE_NAME .
+
+docker tag $DOCKER_IMAGE_NAME $TAG_NAME

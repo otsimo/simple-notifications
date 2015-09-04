@@ -1,10 +1,40 @@
 #!/bin/bash
 
-APP_VERSION=${APP_VERSION:-$(cat VERSION)}
+APP_VERSION=${APP_VERSION:-$(< ./VERSION)}
 
 NUMBER_OF_COMMIT=$(git rev-list HEAD --count)
 SHA_COMMIT=$(git rev-parse --short HEAD)
 BUILD_DATE=$(date +%Y%m%d-%H%M%S)
 BUILD_VERSION=$APP_VERSION.$NUMBER_OF_COMMIT-$SHA_COMMIT-$BUILD_DATE
 
-env GOOS=linux GOARCH=amd64 gb build -ldflags "-X main.Version=$BUILD_VERSION"
+if [ "$1" = "cross" ]; then
+
+    echo "Cross Build for linux and osx"
+    env GOOS=linux GOARCH=amd64 gb build -ldflags "-X main.Version=$BUILD_VERSION"
+    env GOOS=darwin GOARCH=amd64 gb build -ldflags "-X main.Version=$BUILD_VERSION"
+
+elif [ "$1" = "docker" ]; then
+
+    echo "Cross Build for linux amd64"
+    env GOOS=linux GOARCH=amd64 gb build -ldflags "-X main.Version=$BUILD_VERSION"
+
+else
+
+    echo "Build for" $(go env GOOS)
+    env gb build -ldflags "-X main.Version=$BUILD_VERSION"
+
+fi
+
+# Rename files
+
+if [ -f ./bin/main ]; then
+   mv ./bin/main ./bin/notification-$(go env GOOS)-amd64
+fi
+
+if [ -f ./bin/client ]; then
+   mv ./bin/client ./bin/client-$(go env GOOS)-amd64
+fi
+
+if [ -f ./bin/main-linux-amd64 ]; then
+   mv ./bin/main-linux-amd64 ./bin/notification-linux-amd64
+fi

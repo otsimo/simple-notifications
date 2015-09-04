@@ -1,10 +1,10 @@
 FROM centurylink/ca-certs
 
-ADD ./bin/* /notification/
+ADD ./bin/notification-linux-amd64 /notification/
 ADD config.yml /notification/
 
 WORKDIR /notification
 
-EXPOSE 3030
+EXPOSE 50051
 
-CMD ["./main-linux-amd64","--config","config.yml"]
+CMD ["./notification-linux-amd64","--config","config.yml"]
