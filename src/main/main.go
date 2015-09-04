@@ -1,24 +1,24 @@
 package main
+
 import "fmt"
 import (
-	"text/template"
 	"bytes"
-	_ "notification/drivers"
-	_ "notification/drivers/sendgrid"
-	_ "notification/drivers/mandrill"
-	_ "notification/drivers/onesignal"
-	_ "notification/drivers/pushwoosh"
-	_ "notification/drivers/twilio"
-	_ "notification/drivers/mailchimp"
 	_ "google.golang.org/grpc"
 	_ "net"
 	_ "notification"
 	"notification/commands"
+	_ "notification/drivers"
+	_ "notification/drivers/mailchimp"
+	_ "notification/drivers/mandrill"
+	_ "notification/drivers/onesignal"
+	_ "notification/drivers/pushwoosh"
+	_ "notification/drivers/sendgrid"
+	_ "notification/drivers/twilio"
+	"text/template"
 )
 
 func templateTest() {
-	const letter =
-	`Dear {{.name}}, And {{.gift}},
+	const letter = `Dear {{.name}}, And {{.gift}},
 	{{.attended}}
 	Best wishes,
 	SD
@@ -26,9 +26,9 @@ func templateTest() {
 	t := template.Must(template.New("letter").Parse(letter))
 
 	commits := map[string]interface{}{
-		"name": "Sercan Degirmenci",
-		"attended":   true,
-		"gift": "xyaz",
+		"name":     "Sercan Degirmenci",
+		"attended": true,
+		"gift":     "xyaz",
 	}
 
 	var doc bytes.Buffer
@@ -36,7 +36,7 @@ func templateTest() {
 	if err == nil {
 		s := doc.String()
 		fmt.Println(s)
-	}else {
+	} else {
 		panic(err)
 	}
 }

@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"notification"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"notification"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -15,8 +15,8 @@ var verbose bool = false
 var RootCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Short Description",
-	Long: `Long Description`,
-	PersistentPreRun:   func(cmd *cobra.Command, args []string) {
+	Long:  `Long Description`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose {
 			log.SetLevel(log.DebugLevel)
 		}
@@ -36,7 +36,7 @@ func addCommands() {
 }
 
 func init() {
-	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, ForceColors:true})
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, ForceColors: true})
 
 	RootCmd.PersistentFlags().StringP("config", "c", "config.yml", "config file (default is path/config.yml)")
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "debug", "d", false, "enable debug logs")

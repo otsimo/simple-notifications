@@ -1,18 +1,17 @@
 package commands
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
-	"path/filepath"
-	"os"
-	"time"
-	"github.com/bugsnag/osext"
 	log "github.com/Sirupsen/logrus"
-
+	"github.com/bugsnag/osext"
+	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 var (
-	BuildDate = ""
+	BuildDate  = ""
 	ApiVersion = "0.0.1"
 )
 

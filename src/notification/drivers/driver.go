@@ -1,4 +1,5 @@
 package drivers
+
 import (
 	"fmt"
 )
@@ -9,9 +10,9 @@ type Driver interface {
 }
 
 const (
-	TypeEmail string = "email"
-	TypeSms string = "sms"
-	TypePush string = "push"
+	TypeEmail     string = "email"
+	TypeSms       string = "sms"
+	TypePush      string = "push"
 	TypeScheduler string = "scheduler"
 )
 
@@ -30,14 +31,14 @@ func Register(name string, rd *RegisteredDriver) error {
 	if _, ext := drivers[name]; ext {
 		return fmt.Errorf("Name already registered %s", name)
 	}
-	drivers[name] = rd;
+	drivers[name] = rd
 	return nil
 }
 
 func GetDrivers() map[string]string {
 	drives := make(map[string]string, 0)
 
-	for name, d := range (drivers) {
+	for name, d := range drivers {
 		drives[name] = d.Type
 	}
 	return drives

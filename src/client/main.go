@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"notification"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"notification"
 )
 
 const (
-	address = "localhost:50051"
+	address     = "localhost:50051"
 	defaultName = "world"
 )
 
@@ -22,25 +22,24 @@ func main() {
 	defer conn.Close()
 	c := notification.NewNotificationServiceClient(conn)
 
-
 	message := &notification.Message{
 		Template: "welcome",
 		Language: "tr",
 		Targets: []*notification.Target{
 			&notification.Target{
-				Email:&notification.Email{
-					ToEmail:[]string{"to1@examp.com", "to2@examp.com"},
-					FromEmail:"from@asd.com",
+				Email: &notification.Email{
+					ToEmail:   []string{"to1@examp.com", "to2@examp.com"},
+					FromEmail: "from@asd.com",
 				},
 			},
 			&notification.Target{
-				Sms:&notification.Sms{
-					To:[]string{"+21123124", "+123124"},
+				Sms: &notification.Sms{
+					To: []string{"+21123124", "+123124"},
 				},
 			},
 			&notification.Target{
-				Push:&notification.Push{
-					To:[]string{"asdaf78a6sfa6f5asf", "j1g24feqfwd7as6d6t7asf"},
+				Push: &notification.Push{
+					To: []string{"asdaf78a6sfa6f5asf", "j1g24feqfwd7as6d6t7asf"},
 				},
 			},
 		},
