@@ -1,44 +1,47 @@
 package notification
 
 import (
-	log "github.com/Sirupsen/logrus"
-
-	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"net"
 	"notification/drivers"
+	pb "notificationpb"
+
+	log "github.com/Sirupsen/logrus"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
 
-type Server struct{}
+type Server struct {
+	Config  *Config
+	Drivers map[string]drivers.Driver
+}
 
-func (s *Server) SendMessage(ctx context.Context, in *Message) (*SendMessageResponse, error) {
+func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.SendMessageResponse, error) {
 	log.Debugln("SendMessage", in.Template)
-	fmt.Printf("%d of targets found\n", len(in.Targets))
 
 	for _, t := range in.Targets {
-		if t.Email != nil {
-			fmt.Println("target: Email", t.Email)
-		} else if t.Push != nil {
-			fmt.Println("target: Push", t.Push)
-		} else if t.Sms != nil {
-			fmt.Println("target: Sms", t.Sms)
+		ty := getTargetType(t)
+		if len(ty) > 0 {
+			driver := server.Drivers[ty]
+			if driver != nil {
+				driver.Send(in, t)
+			} else {
+				log.Warningf("%s driver not found", ty)
+			}
+		} else {
+			log.Warningf("there is no suitable driver")
 		}
 	}
-	return &SendMessageResponse{}, nil
+	return &pb.SendMessageResponse{}, nil
 }
 
-func addDriver(dr drivers.Driver) {
-	if dr == nil {
-		return
-	}
-
+func (server *Server) addDriver(dr drivers.Driver) {
+	server.Drivers[dr.Type()] = dr
 }
 
-func LoadDrivers(config *Config) {
-	log.Debugf("Config is %v", config)
+func (server *Server) LoadDrivers() {
+	log.Debugf("Config is %v", server.Config)
 
-	for _, r := range config.Drivers {
+	for _, r := range server.Config.Drivers {
 		if driver := drivers.GetDriver(r.Provider); driver != nil {
 			if driver.Type == r.Type {
 				dr, err := driver.New(r.Config)
@@ -47,7 +50,7 @@ func LoadDrivers(config *Config) {
 				} else if dr == nil {
 					log.Errorf("%s driver is created as nil", r.Provider)
 				} else {
-					addDriver(dr)
+					server.addDriver(dr)
 				}
 			} else {
 				log.Errorf("%s named driver is \"%s\" driver in config, but it is actually a \"%s\" driver", r.Provider, r.Type, driver.Type)
@@ -58,19 +61,27 @@ func LoadDrivers(config *Config) {
 	}
 }
 
-func ListenAndServe(config *Config) {
-	port := config.GetPortString()
+func (server *Server) ListenAndServe() {
+	port := server.Config.GetPortString()
 
+	//Listen
 	lis, err := net.Listen("tcp", port)
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
-	RegisterNotificationServiceServer(s, &Server{})
+	grpcServer := grpc.NewServer()
+	pb.RegisterNotificationServiceServer(grpcServer, server)
 
 	log.Infoln("Listening", port)
+	//Serve
+	grpcServer.Serve(lis)
+}
 
-	s.Serve(lis)
+func NewServer(config *Config) *Server {
+	return &Server{
+		Config:  config,
+		Drivers: make(map[string]drivers.Driver),
+	}
 }

@@ -2,11 +2,13 @@ package drivers
 
 import (
 	"fmt"
+	pb "notificationpb"
 )
 
 type Driver interface {
 	Name() string
 	Type() string
+	Send(*pb.Message, *pb.Target) error
 }
 
 const (

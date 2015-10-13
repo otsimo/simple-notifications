@@ -2,17 +2,17 @@ drivers:
   - type: sms
     provider: twilio
     config:
-      apikey: asd
-      apiToken: asd
+      apiKey: asdApiKey
+      apiToken: asdToken
   - type: email
     provider: sendgrid
     config:
-      apikey: asd
+      apiKey: "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"
+      defaultSender: "noreply@otsimo.com"
+      defaultSenderName: "Otsimo"
   - type: push
     provider: onesignal
     config:
       apiToken: asd
 schedular: ~
 templatePath: ./templates
-port: 1245
-

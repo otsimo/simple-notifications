@@ -1,7 +1,13 @@
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
-package notification;
+package notificationpb;
+
+import "gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
 
 message Email{
     repeated string to_email = 1;
@@ -9,20 +15,20 @@ message Email{
     string from_email = 3;
     string from_name = 4;
     string subject = 5;
-    map<string, google.protobuf.Any> parameters = 6;
-    map<string, google.protobuf.Any> data = 7;
+    map<string, string> parameters = 6;
+    map<string, string> data = 7;
 }
 
 message Sms{
     repeated string to = 1;
-    map<string, google.protobuf.Any> parameters = 2;
-    map<string, google.protobuf.Any> data = 3;
+    map<string, string> parameters = 2;
+    map<string, string> data = 3;
 }
 
 message Push{
     repeated string to = 1;
-    map<string, google.protobuf.Any> parameters = 2;
-    map<string, google.protobuf.Any> data = 3;
+    map<string, string> parameters = 2;
+    map<string, string> data = 3;
 }
 
 message Target{
@@ -32,8 +38,6 @@ message Target{
         Push push = 3;
     }
 }
-
-
 
 message Message {
     string template = 1;

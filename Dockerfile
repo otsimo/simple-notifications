@@ -5,6 +5,6 @@ ADD config.yml /notification/
 
 WORKDIR /notification
 
-EXPOSE 50051
+EXPOSE 18844
 
 CMD ["./notification-linux-amd64","--config","config.yml"]

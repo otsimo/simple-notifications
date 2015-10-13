@@ -3,6 +3,6 @@
 FILE_NAME=notification-$(go env GOOS)-amd64
 
 if [ -f ./bin/$FILE_NAME ]; then
-   ./bin/$FILE_NAME run
+   ./bin/$FILE_NAME --debug --config=config.yml
 fi
 

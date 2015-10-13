@@ -1,4 +1,4 @@
-.PHONY: default build release clean
+.PHONY: default build release proto clean
 
 default: build
 
@@ -16,10 +16,13 @@ run: build
 	script/run
 
 fmt:
-	go fmt ./src/...
+	goimports -w src
 
 vet:
 	go vet ./src/...
+
+proto:
+	script/proto
 
 clean:
 	rm -rf bin

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#protoc -I ./proto ./proto/service.proto --go_out=plugins=grpc:src/notificationpb/
+protoc --proto_path=$GOPATH/src/github.com/gogo/protobuf/:./proto --gofast_out=plugins=grpc:./src/notificationpb/ ./proto/service.proto
+

@@ -42,10 +42,11 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/bradfitz/http2"
-	"github.com/bradfitz/http2/hpack"
 	"golang.org/x/net/context"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/hpack"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 )
@@ -57,7 +58,8 @@ var ErrIllegalHeaderWrite = errors.New("transport: the stream is done or WriteHe
 // http2Server implements the ServerTransport interface with HTTP2.
 type http2Server struct {
 	conn        net.Conn
-	maxStreamID uint32 // max stream ID ever seen
+	maxStreamID uint32               // max stream ID ever seen
+	authInfo    credentials.AuthInfo // auth info about the connection
 	// writableChan synchronizes write access to the transport.
 	// A writer acquires the write lock by sending a value on writableChan
 	// and releases it by receiving from writableChan.
@@ -88,7 +90,7 @@ type http2Server struct {
 
 // newHTTP2Server constructs a ServerTransport based on HTTP2. ConnectionError is
 // returned if something goes wrong.
-func newHTTP2Server(conn net.Conn, maxStreams uint32) (_ ServerTransport, err error) {
+func newHTTP2Server(conn net.Conn, maxStreams uint32, authInfo credentials.AuthInfo) (_ ServerTransport, err error) {
 	framer := newFramer(conn)
 	// Send initial settings as connection preface to client.
 	var settings []http2.Setting
@@ -113,14 +115,15 @@ func newHTTP2Server(conn net.Conn, maxStreams uint32) (_ ServerTransport, err er
 	}
 	var buf bytes.Buffer
 	t := &http2Server{
-		conn:            conn,
-		framer:          framer,
-		hBuf:            &buf,
-		hEnc:            hpack.NewEncoder(&buf),
-		maxStreams:      maxStreams,
-		controlBuf:      newRecvBuffer(),
-		fc:              &inFlow{limit: initialConnWindowSize},
-		sendQuotaPool:   newQuotaPool(defaultWindowSize),
+		conn:          conn,
+		authInfo:      authInfo,
+		framer:        framer,
+		hBuf:          &buf,
+		hEnc:          hpack.NewEncoder(&buf),
+		maxStreams:    maxStreams,
+		controlBuf:    newRecvBuffer(),
+		fc:            &inFlow{limit: initialConnWindowSize},
+		sendQuotaPool: newQuotaPool(defaultWindowSize),
 		state:           reachable,
 		writableChan:    make(chan int, 1),
 		shutdownChan:    make(chan struct{}),
@@ -135,7 +138,7 @@ func newHTTP2Server(conn net.Conn, maxStreams uint32) (_ ServerTransport, err er
 // operateHeader takes action on the decoded headers. It returns the current
 // stream if there are remaining headers on the wire (in the following
 // Continuation frame).
-func (t *http2Server) operateHeaders(hDec *hpackDecoder, s *Stream, frame headerFrame, endStream bool, handle func(*Stream), wg *sync.WaitGroup) (pendingStream *Stream) {
+func (t *http2Server) operateHeaders(hDec *hpackDecoder, s *Stream, frame headerFrame, endStream bool, handle func(*Stream)) (pendingStream *Stream) {
 	defer func() {
 		if pendingStream == nil {
 			hDec.state = decodeState{}
@@ -181,6 +184,10 @@ func (t *http2Server) operateHeaders(hDec *hpackDecoder, s *Stream, frame header
 	} else {
 		s.ctx, s.cancel = context.WithCancel(context.TODO())
 	}
+	// Attach Auth info if there is any.
+	if t.authInfo != nil {
+		s.ctx = credentials.NewContext(s.ctx, t.authInfo)
+	}
 	// Cache the current stream to the context so that the server application
 	// can find out. Required when the server wants to send some metadata
 	// back to the client (unary call only).
@@ -195,12 +202,7 @@ func (t *http2Server) operateHeaders(hDec *hpackDecoder, s *Stream, frame header
 		recv: s.buf,
 	}
 	s.method = hDec.state.method
-
-	wg.Add(1)
-	go func() {
-		handle(s)
-		wg.Done()
-	}()
+	handle(s)
 	return nil
 }
 
@@ -236,8 +238,6 @@ func (t *http2Server) HandleStreams(handle func(*Stream)) {
 
 	hDec := newHPACKDecoder()
 	var curStream *Stream
-	var wg sync.WaitGroup
-	defer wg.Wait()
 	for {
 		frame, err := t.framer.readFrame()
 		if err != nil {
@@ -266,9 +266,9 @@ func (t *http2Server) HandleStreams(handle func(*Stream)) {
 				fc:  fc,
 			}
 			endStream := frame.Header().Flags.Has(http2.FlagHeadersEndStream)
-			curStream = t.operateHeaders(hDec, curStream, frame, endStream, handle, &wg)
+			curStream = t.operateHeaders(hDec, curStream, frame, endStream, handle)
 		case *http2.ContinuationFrame:
-			curStream = t.operateHeaders(hDec, curStream, frame, false, handle, &wg)
+			curStream = t.operateHeaders(hDec, curStream, frame, false, handle)
 		case *http2.DataFrame:
 			t.handleData(frame)
 		case *http2.RSTStreamFrame:
@@ -681,4 +681,8 @@ func (t *http2Server) closeStream(s *Stream) {
 	// to call cancel on the stream to interrupt the blocking on
 	// other goroutines.
 	s.cancel()
+}
+
+func (t *http2Server) RemoteAddr() net.Addr {
+	return t.conn.RemoteAddr()
 }

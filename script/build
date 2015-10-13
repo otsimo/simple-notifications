@@ -1,5 +1,6 @@
 #!/bin/bash
 
+APP_NAME=notification
 APP_VERSION=${APP_VERSION:-$(< ./VERSION)}
 
 NUMBER_OF_COMMIT=$(git rev-list HEAD --count)
@@ -28,13 +29,13 @@ fi
 # Rename files
 
 if [ -f ./bin/main ]; then
-   mv ./bin/main ./bin/notification-$(go env GOOS)-amd64
+   mv ./bin/main ./bin/${APP_NAME}-$(go env GOOS)-amd64
 fi
 
-if [ -f ./bin/client ]; then
-   mv ./bin/client ./bin/client-$(go env GOOS)-amd64
+if [ -f ./bin/example ]; then
+   mv ./bin/example ./bin/example-$(go env GOOS)-amd64
 fi
 
 if [ -f ./bin/main-linux-amd64 ]; then
-   mv ./bin/main-linux-amd64 ./bin/notification-linux-amd64
+   mv ./bin/main-linux-amd64 ./bin/${APP_NAME}-linux-amd64
 fi
