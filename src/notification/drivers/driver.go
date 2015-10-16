@@ -2,13 +2,14 @@ package drivers
 
 import (
 	"fmt"
+	"notification/template"
 	pb "notificationpb"
 )
 
 type Driver interface {
 	Name() string
 	Type() string
-	Send(*pb.Message, *pb.Target) error
+	Send(lang string, defaultLang string, target *pb.Target, tGroup *template.TemplateGroup) error
 }
 
 const (

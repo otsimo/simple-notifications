@@ -15,8 +15,11 @@ message Email{
     string from_email = 3;
     string from_name = 4;
     string subject = 5;
-    map<string, string> parameters = 6;
-    map<string, string> data = 7;
+    repeated string cc = 6;
+    repeated string bcc = 7;
+    string reply_to = 8;
+    map<string, string> parameters = 9;
+    map<string, string> data = 10;
 }
 
 message Sms{
@@ -46,9 +49,17 @@ message Message {
     repeated Target targets = 4;
 }
 
+message MessageTargetResponse{
+    int32 type = 1;
+    string data = 2;
+    string target = 3;
+    string driver =4;
+}
+
 message SendMessageResponse{
 	int32 type = 1;
 	string data = 2;
+	repeated MessageTargetResponse results = 3;
 }
 
 service NotificationService {

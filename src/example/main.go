@@ -15,6 +15,7 @@ const (
 )
 
 func main() {
+
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
@@ -25,20 +26,19 @@ func main() {
 
 	message := &pb.Message{
 		Template: "welcome",
-		Language: "tr",
+		//Language: "en",
 		Targets: []*pb.Target{
 			pb.NewEmailTarget(&pb.Email{
-				ToEmail:   []string{"degirmencisercan@gmail.com"},
-				FromEmail: "noreply@otsimo.com",
-				FromName:  "Sercan Değirmenci",
-				Subject:   "Hello World!!",
+				ToEmail: []string{"degirmencisercan@gmail.com"},
+				Cc:      []string{"sercan@otsimo.com"},
+				Data:    map[string]string{"name": "sercan"},
 			}),
-			pb.NewSmsTarget(&pb.Sms{
+			/*pb.NewSmsTarget(&pb.Sms{
 				To: []string{"+21123124", "+123124"},
 			}),
 			pb.NewPushTarget(&pb.Push{
 				To: []string{"asdaf78a6sfa6f5asf", "j1g24feqfwd7as6d6t7asf"},
-			}),
+			}),*/
 		},
 	}
 
@@ -48,5 +48,8 @@ func main() {
 		log.Fatalf("could not send message: %v", err)
 	}
 
-	log.Printf("Result: %d \n %s \n", r.Type, r.Data)
+	log.Printf("Result: %d\n%s\n%d", r.Type, r.Data, len(r.Results))
+	for _, r2 := range r.Results {
+		log.Printf("[%s]='%s': %d-%s", r2.Target, r2.Driver, r2.Type, r2.Data)
+	}
 }

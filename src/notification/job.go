@@ -1,4 +1,5 @@
 package notification
+
 import pb "notificationpb"
 
 type Job struct {

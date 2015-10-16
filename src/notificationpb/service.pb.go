@@ -14,6 +14,7 @@
 		Push
 		Target
 		Message
+		MessageTargetResponse
 		SendMessageResponse
 */
 package notificationpb
@@ -44,8 +45,11 @@ type Email struct {
 	FromEmail  string            `protobuf:"bytes,3,opt,name=from_email,proto3" json:"from_email,omitempty"`
 	FromName   string            `protobuf:"bytes,4,opt,name=from_name,proto3" json:"from_name,omitempty"`
 	Subject    string            `protobuf:"bytes,5,opt,name=subject,proto3" json:"subject,omitempty"`
-	Parameters map[string]string `protobuf:"bytes,6,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Data       map[string]string `protobuf:"bytes,7,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Cc         []string          `protobuf:"bytes,6,rep,name=cc" json:"cc,omitempty"`
+	Bcc        []string          `protobuf:"bytes,7,rep,name=bcc" json:"bcc,omitempty"`
+	ReplyTo    string            `protobuf:"bytes,8,opt,name=reply_to,proto3" json:"reply_to,omitempty"`
+	Parameters map[string]string `protobuf:"bytes,9,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Data       map[string]string `protobuf:"bytes,10,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (m *Email) Reset()         { *m = Email{} }
@@ -210,9 +214,21 @@ func (m *Message) Reset()         { *m = Message{} }
 func (m *Message) String() string { return proto.CompactTextString(m) }
 func (*Message) ProtoMessage()    {}
 
+type MessageTargetResponse struct {
+	Type   int32  `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
+	Data   string `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Target string `protobuf:"bytes,3,opt,name=target,proto3" json:"target,omitempty"`
+	Driver string `protobuf:"bytes,4,opt,name=driver,proto3" json:"driver,omitempty"`
+}
+
+func (m *MessageTargetResponse) Reset()         { *m = MessageTargetResponse{} }
+func (m *MessageTargetResponse) String() string { return proto.CompactTextString(m) }
+func (*MessageTargetResponse) ProtoMessage()    {}
+
 type SendMessageResponse struct {
-	Type int32  `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
-	Data string `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Type    int32                    `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
+	Data    string                   `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Results []*MessageTargetResponse `protobuf:"bytes,3,rep,name=results" json:"results,omitempty"`
 }
 
 func (m *SendMessageResponse) Reset()         { *m = SendMessageResponse{} }
@@ -343,6 +359,42 @@ func (m *Email) MarshalTo(data []byte) (int, error) {
 		i = encodeVarintService(data, i, uint64(len(m.Subject)))
 		i += copy(data[i:], m.Subject)
 	}
+	if len(m.Cc) > 0 {
+		for _, s := range m.Cc {
+			data[i] = 0x32
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				data[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			data[i] = uint8(l)
+			i++
+			i += copy(data[i:], s)
+		}
+	}
+	if len(m.Bcc) > 0 {
+		for _, s := range m.Bcc {
+			data[i] = 0x3a
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				data[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			data[i] = uint8(l)
+			i++
+			i += copy(data[i:], s)
+		}
+	}
+	if len(m.ReplyTo) > 0 {
+		data[i] = 0x42
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.ReplyTo)))
+		i += copy(data[i:], m.ReplyTo)
+	}
 	if len(m.Parameters) > 0 {
 		keysForParameters := make([]string, 0, len(m.Parameters))
 		for k, _ := range m.Parameters {
@@ -350,7 +402,7 @@ func (m *Email) MarshalTo(data []byte) (int, error) {
 		}
 		github_com_gogo_protobuf_sortkeys.Strings(keysForParameters)
 		for _, k := range keysForParameters {
-			data[i] = 0x32
+			data[i] = 0x4a
 			i++
 			v := m.Parameters[k]
 			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
@@ -372,7 +424,7 @@ func (m *Email) MarshalTo(data []byte) (int, error) {
 		}
 		github_com_gogo_protobuf_sortkeys.Strings(keysForData)
 		for _, k := range keysForData {
-			data[i] = 0x3a
+			data[i] = 0x52
 			i++
 			v := m.Data[k]
 			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
@@ -658,6 +710,47 @@ func (m *Message) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
+func (m *MessageTargetResponse) Marshal() (data []byte, err error) {
+	size := m.Size()
+	data = make([]byte, size)
+	n, err := m.MarshalTo(data)
+	if err != nil {
+		return nil, err
+	}
+	return data[:n], nil
+}
+
+func (m *MessageTargetResponse) MarshalTo(data []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if m.Type != 0 {
+		data[i] = 0x8
+		i++
+		i = encodeVarintService(data, i, uint64(m.Type))
+	}
+	if len(m.Data) > 0 {
+		data[i] = 0x12
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.Data)))
+		i += copy(data[i:], m.Data)
+	}
+	if len(m.Target) > 0 {
+		data[i] = 0x1a
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.Target)))
+		i += copy(data[i:], m.Target)
+	}
+	if len(m.Driver) > 0 {
+		data[i] = 0x22
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.Driver)))
+		i += copy(data[i:], m.Driver)
+	}
+	return i, nil
+}
+
 func (m *SendMessageResponse) Marshal() (data []byte, err error) {
 	size := m.Size()
 	data = make([]byte, size)
@@ -683,6 +776,18 @@ func (m *SendMessageResponse) MarshalTo(data []byte) (int, error) {
 		i++
 		i = encodeVarintService(data, i, uint64(len(m.Data)))
 		i += copy(data[i:], m.Data)
+	}
+	if len(m.Results) > 0 {
+		for _, msg := range m.Results {
+			data[i] = 0x1a
+			i++
+			i = encodeVarintService(data, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(data[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
 	}
 	return i, nil
 }
@@ -738,6 +843,22 @@ func (m *Email) Size() (n int) {
 		n += 1 + l + sovService(uint64(l))
 	}
 	l = len(m.Subject)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
+	if len(m.Cc) > 0 {
+		for _, s := range m.Cc {
+			l = len(s)
+			n += 1 + l + sovService(uint64(l))
+		}
+	}
+	if len(m.Bcc) > 0 {
+		for _, s := range m.Bcc {
+			l = len(s)
+			n += 1 + l + sovService(uint64(l))
+		}
+	}
+	l = len(m.ReplyTo)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -875,6 +996,27 @@ func (m *Message) Size() (n int) {
 	return n
 }
 
+func (m *MessageTargetResponse) Size() (n int) {
+	var l int
+	_ = l
+	if m.Type != 0 {
+		n += 1 + sovService(uint64(m.Type))
+	}
+	l = len(m.Data)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
+	l = len(m.Target)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
+	l = len(m.Driver)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
+	return n
+}
+
 func (m *SendMessageResponse) Size() (n int) {
 	var l int
 	_ = l
@@ -884,6 +1026,12 @@ func (m *SendMessageResponse) Size() (n int) {
 	l = len(m.Data)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
+	}
+	if len(m.Results) > 0 {
+		for _, e := range m.Results {
+			l = e.Size()
+			n += 1 + l + sovService(uint64(l))
+		}
 	}
 	return n
 }
@@ -1077,6 +1225,93 @@ func (m *Email) Unmarshal(data []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Cc", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Cc = append(m.Cc, string(data[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Bcc", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Bcc = append(m.Bcc, string(data[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReplyTo", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ReplyTo = string(data[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Parameters", wireType)
 			}
 			var msglen int
@@ -1186,7 +1421,7 @@ func (m *Email) Unmarshal(data []byte) error {
 			}
 			m.Parameters[mapkey] = mapvalue
 			iNdEx = postIndex
-		case 7:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
 			}
@@ -2224,6 +2459,162 @@ func (m *Message) Unmarshal(data []byte) error {
 	}
 	return nil
 }
+func (m *MessageTargetResponse) Unmarshal(data []byte) error {
+	l := len(data)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := data[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MessageTargetResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MessageTargetResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			m.Type = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				m.Type |= (int32(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Data = string(data[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Target = string(data[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Driver", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Driver = string(data[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipService(data[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthService
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *SendMessageResponse) Unmarshal(data []byte) error {
 	l := len(data)
 	iNdEx := 0
@@ -2300,6 +2691,37 @@ func (m *SendMessageResponse) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Data = string(data[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Results", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Results = append(m.Results, &MessageTargetResponse{})
+			if err := m.Results[len(m.Results)-1].Unmarshal(data[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

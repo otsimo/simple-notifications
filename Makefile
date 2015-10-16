@@ -1,4 +1,4 @@
-.PHONY: default build release proto clean
+.PHONY: default build release test proto clean
 
 default: build
 
@@ -20,6 +20,9 @@ fmt:
 
 vet:
 	go vet ./src/...
+
+test:
+	script/test
 
 proto:
 	script/proto

@@ -2,6 +2,7 @@ package sendgrid
 
 import (
 	"notification/drivers"
+	"notification/template"
 	pb "notificationpb"
 
 	log "github.com/Sirupsen/logrus"
@@ -25,6 +26,13 @@ func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	} else {
 		d.Client = sendgrid.NewSendGridClientWithApiKey(config["apiKey"].(string))
 	}
+
+	if sender := config["defaultFrom"]; sender != nil {
+		d.DefaultFromEmail = sender.(string)
+	}
+	if sender := config["defaultFromName"]; sender != nil {
+		d.DefaultFromName = sender.(string)
+	}
 	return d, nil
 }
 
@@ -42,30 +50,49 @@ func (d SendGridDriver) Type() string {
 	return drivers.TypeEmail
 }
 
-func (d *SendGridDriver) Send(in *pb.Message, t *pb.Target) error {
-	log.Infoln("Sending mail via", SendGridDriverName)
-
+func (d *SendGridDriver) Send(language, defaultLang string, t *pb.Target, temp *template.TemplateGroup) error {
 	m := t.GetEmail()
 
 	message := sendgrid.NewMail()
 
-	message.SetFrom(m.FromEmail)
-	message.AddTos(m.ToEmail)
-	message.SetSubject(m.Subject)
+	if len(m.FromEmail) > 0 {
+		message.SetFrom(m.FromEmail)
+	} else {
+		message.SetFrom(d.DefaultFromEmail)
+	}
 
+	message.AddTos(m.ToEmail)
+	message.AddCcs(m.Cc)
+	message.AddBccs(m.Bcc)
+
+	if len(m.ReplyTo) > 0 {
+		message.SetReplyTo(m.ReplyTo)
+	}
 	if len(m.ToName) > 0 {
 		message.AddToNames(m.ToName)
 	}
 	if len(m.FromName) > 0 {
 		message.SetFromName(m.FromName)
+	} else {
+		message.SetFromName(d.DefaultFromName)
 	}
-	//TODO Read And Parse
-	message.SetText("Hello World")
+
+	if txt := temp.GetText(template.TemplateHtml, language, defaultLang, m.Data); len(txt) > 0 {
+		message.SetHTML(txt)
+	}
+
+	if txt := temp.GetText(template.TemplateText, language, defaultLang, m.Data); len(txt) > 0 {
+		message.SetText(txt)
+	}
+
+	if txt := temp.GetText(template.TemplateEmailSubject, language, defaultLang, m.Data); len(txt) > 0 {
+		message.SetSubject(txt)
+	} else {
+		message.SetSubject(m.Subject)
+	}
 
 	r := d.Client.Send(message)
-	if r == nil {
-		log.Infoln("Email sent!")
-	} else {
+	if r != nil {
 		log.Errorln(r)
 	}
 	return r

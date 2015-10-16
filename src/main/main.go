@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"notification"
 	_ "notification/drivers"
@@ -12,48 +10,24 @@ import (
 	_ "notification/drivers/onesignal"
 	_ "notification/drivers/pushwoosh"
 	_ "notification/drivers/sendgrid"
+	_ "notification/drivers/smtp"
 	_ "notification/drivers/twilio"
 	"os"
 	"path/filepath"
 	"strconv"
-	"text/template"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"gopkg.in/yaml.v2"
 )
 
-func templateTest() {
-	const letter = `Dear {{.name}}, And {{.gift}},
-	{{.attended}}
-	Best wishes,
-	SD
-	`
-	t := template.Must(template.New("letter").Parse(letter))
-
-	commits := map[string]interface{}{
-		"name":     "Sercan Degirmenci",
-		"attended": true,
-		"gift":     "xyaz",
-	}
-
-	var doc bytes.Buffer
-	err := t.Execute(&doc, commits)
-	if err == nil {
-		s := doc.String()
-		fmt.Println(s)
-	} else {
-		panic(err)
-	}
-}
-
 var Version string
 var RunConfig *notification.Config = notification.NewConfig()
 
 const (
 	EnvConfigName = "NOTIFICATION_CONFIG"
-	EnvDebugName  = "NOTIFICATION_DEBUG"
-	EnvPortName   = "NOTIFICATION_PORT"
+	EnvDebugName = "NOTIFICATION_DEBUG"
+	EnvPortName = "NOTIFICATION_PORT"
 )
 
 func RunAction(c *cli.Context) {
@@ -65,22 +39,22 @@ func RunAction(c *cli.Context) {
 
 	dat, err := ioutil.ReadFile(cnf)
 	if err != nil {
-		log.Fatalf("contents file '%s' read error: %v", cnf, err)
+		log.Fatalf("main.go: Config file '%s' read error: %v", cnf, err)
 	}
 
 	e := filepath.Ext(cnf)
 	if e == ".yml" || e == "yaml" {
 		err = yaml.Unmarshal(dat, RunConfig)
 		if err != nil {
-			log.Fatalf("Error while unmarshal config file, error: %v", err)
+			log.Fatalf("main.go: Error while unmarshal config file, error: %v", err)
 		}
 	} else if e == "json" {
 		err = json.Unmarshal(dat, RunConfig)
 		if err != nil {
-			log.Fatalf("Error while unmarshal config file, error: %v", err)
+			log.Fatalf("main.go: Error while unmarshal config file, error: %v", err)
 		}
 	} else {
-		log.Fatalln("Unknown config file format")
+		log.Fatalln("main.go: Unknown config file format")
 	}
 
 	envPort := os.Getenv(EnvPortName)
@@ -93,6 +67,7 @@ func RunAction(c *cli.Context) {
 
 	server := notification.NewServer(RunConfig)
 	server.LoadDrivers()
+	server.LoadTemplates()
 	server.ListenAndServe()
 }
 

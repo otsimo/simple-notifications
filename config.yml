@@ -7,12 +7,14 @@ drivers:
   - type: email
     provider: sendgrid
     config:
-      apiKey: "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"
-      defaultSender: "noreply@otsimo.com"
-      defaultSenderName: "Otsimo"
+      apiKey: "SEND_GRID_API_KEY"
+      defaultFrom: "noreply@example.com"
+      defaultFromName: "Example.com"
   - type: push
     provider: onesignal
     config:
       apiToken: asd
 schedular: ~
 templatePath: ./templates
+defaultLanguage: en
+cacheAtStart: true
