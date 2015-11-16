@@ -28,14 +28,10 @@ fi
 
 # Rename files
 
-if [ -f ./bin/main ]; then
-   mv ./bin/main ./bin/${APP_NAME}-$(go env GOOS)-amd64
+if [ -f ./bin/notification ]; then
+   mv ./bin/notification ./bin/${APP_NAME}-$(go env GOOS)-amd64
 fi
 
 if [ -f ./bin/example ]; then
    mv ./bin/example ./bin/example-$(go env GOOS)-amd64
-fi
-
-if [ -f ./bin/main-linux-amd64 ]; then
-   mv ./bin/main-linux-amd64 ./bin/${APP_NAME}-linux-amd64
 fi

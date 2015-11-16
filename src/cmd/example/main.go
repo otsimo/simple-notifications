@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	address     = "localhost:18844"
+	address = "localhost:18844"
 	defaultName = "world"
 )
 
@@ -27,19 +27,18 @@ func main() {
 	message := &pb.Message{
 		Template: "welcome",
 		//Language: "en",
-		Targets: []*pb.Target{
-			pb.NewEmailTarget(&pb.Email{
+		Targets: pb.NewTargets(
+			&pb.Email{
 				ToEmail: []string{"degirmencisercan@gmail.com"},
 				Cc:      []string{"sercan@otsimo.com"},
 				Data:    map[string]string{"name": "sercan"},
-			}),
-			/*pb.NewSmsTarget(&pb.Sms{
+			},
+			&pb.Sms{
 				To: []string{"+21123124", "+123124"},
-			}),
-			pb.NewPushTarget(&pb.Push{
+			},
+			&pb.Push{
 				To: []string{"asdaf78a6sfa6f5asf", "j1g24feqfwd7as6d6t7asf"},
-			}),*/
-		},
+			}),
 	}
 
 	r, err := c.SendMessage(context.Background(), message)

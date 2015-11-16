@@ -1,4 +1,5 @@
 package notificationpb
+import "fmt"
 
 func NewEmailTarget(email *Email) *Target {
 	return &Target{
@@ -23,6 +24,36 @@ func NewPushTarget(push *Push) *Target {
 		},
 	}
 }
+
+func NewTargets(targets ...interface{}) []*Target {
+	r := make([]*Target, 0)
+	for _, opt := range targets {
+		switch v := opt.(type) {
+		case *Email:
+			r = append(r, &Target{
+				Backend: &Target_Email{
+					Email: opt.(*Email),
+				},
+			})
+		case *Sms:
+			r = append(r, &Target{
+				Backend: &Target_Sms{
+					Sms: opt.(*Sms),
+				},
+			})
+		case *Push:
+			r = append(r, &Target{
+				Backend: &Target_Push{
+					Push: opt.(*Push),
+				},
+			})
+		default:
+			fmt.Printf("unknown notification target %v", v)
+		}
+	}
+	return r
+}
+
 
 func NewMessageTargetResponse(resultType int32, target, driver string) *MessageTargetResponse {
 	return &MessageTargetResponse{
