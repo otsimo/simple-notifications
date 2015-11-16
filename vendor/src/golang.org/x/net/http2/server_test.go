@@ -1,9 +1,6 @@
 // Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-// See https://code.google.com/p/go/source/browse/CONTRIBUTORS
-// Licensed under the same terms as Go itself:
-// https://code.google.com/p/go/source/browse/LICENSE
 
 package http2
 
@@ -20,6 +17,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -33,6 +31,14 @@ import (
 )
 
 var stderrVerbose = flag.Bool("stderr_verbose", false, "Mirror verbosity to stderr, unbuffered")
+
+func stderrv() io.Writer {
+	if *stderrVerbose {
+		return os.Stderr
+	}
+
+	return ioutil.Discard
+}
 
 type serverTester struct {
 	cc        net.Conn // client conn
@@ -106,13 +112,8 @@ func newServerTester(t testing.TB, handler http.HandlerFunc, opts ...interface{}
 	}
 	st.hpackEnc = hpack.NewEncoder(&st.headerBuf)
 
-	var stderrv io.Writer = ioutil.Discard
-	if *stderrVerbose {
-		stderrv = os.Stderr
-	}
-
 	ts.TLS = ts.Config.TLSConfig // the httptest.Server has its own copy of this TLS config
-	ts.Config.ErrorLog = log.New(io.MultiWriter(stderrv, twriter{t: t, st: st}, logBuf), "", log.LstdFlags)
+	ts.Config.ErrorLog = log.New(io.MultiWriter(stderrv(), twriter{t: t, st: st}, logBuf), "", log.LstdFlags)
 	ts.StartTLS()
 
 	if VerboseLogs {
@@ -122,9 +123,9 @@ func newServerTester(t testing.TB, handler http.HandlerFunc, opts ...interface{}
 		st.scMu.Lock()
 		defer st.scMu.Unlock()
 		st.sc = v
-		st.sc.testHookCh = make(chan func())
+		st.sc.testHookCh = make(chan func(int))
 	}
-	log.SetOutput(io.MultiWriter(stderrv, twriter{t: t, st: st}))
+	log.SetOutput(io.MultiWriter(stderrv(), twriter{t: t, st: st}))
 	if !onlyServer {
 		cc, err := tls.Dial("tcp", ts.Listener.Addr().String(), tlsConfig)
 		if err != nil {
@@ -149,7 +150,7 @@ func (st *serverTester) addLogFilter(phrase string) {
 
 func (st *serverTester) stream(id uint32) *stream {
 	ch := make(chan *stream, 1)
-	st.sc.testHookCh <- func() {
+	st.sc.testHookCh <- func(int) {
 		ch <- st.sc.streams[id]
 	}
 	return <-ch
@@ -157,11 +158,37 @@ func (st *serverTester) stream(id uint32) *stream {
 
 func (st *serverTester) streamState(id uint32) streamState {
 	ch := make(chan streamState, 1)
-	st.sc.testHookCh <- func() {
+	st.sc.testHookCh <- func(int) {
 		state, _ := st.sc.state(id)
 		ch <- state
 	}
 	return <-ch
+}
+
+// loopNum reports how many times this conn's select loop has gone around.
+func (st *serverTester) loopNum() int {
+	lastc := make(chan int, 1)
+	st.sc.testHookCh <- func(loopNum int) {
+		lastc <- loopNum
+	}
+	return <-lastc
+}
+
+// awaitIdle heuristically awaits for the server conn's select loop to be idle.
+// The heuristic is that the server connection's serve loop must schedule
+// 50 times in a row without any channel sends or receives occuring.
+func (st *serverTester) awaitIdle() {
+	remain := 50
+	last := st.loopNum()
+	for remain > 0 {
+		n := st.loopNum()
+		if n == last+1 {
+			remain--
+		} else {
+			remain = 50
+		}
+		last = n
+	}
 }
 
 func (st *serverTester) Close() {
@@ -1023,6 +1050,56 @@ func TestServer_RSTStream_Unblocks_Read(t *testing.T) {
 			}
 		},
 	)
+}
+
+func TestServer_RSTStream_Unblocks_Header_Write(t *testing.T) {
+	// Run this test a bunch, because it doesn't always
+	// deadlock. But with a bunch, it did.
+	n := 50
+	if testing.Short() {
+		n = 5
+	}
+	for i := 0; i < n; i++ {
+		testServer_RSTStream_Unblocks_Header_Write(t)
+	}
+}
+
+func testServer_RSTStream_Unblocks_Header_Write(t *testing.T) {
+	inHandler := make(chan bool, 1)
+	unblockHandler := make(chan bool, 1)
+	headerWritten := make(chan bool, 1)
+	wroteRST := make(chan bool, 1)
+
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		inHandler <- true
+		<-wroteRST
+		w.Header().Set("foo", "bar")
+		w.WriteHeader(200)
+		w.(http.Flusher).Flush()
+		headerWritten <- true
+		<-unblockHandler
+	})
+	defer st.Close()
+
+	st.greet()
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1,
+		BlockFragment: st.encodeHeader(":method", "POST"),
+		EndStream:     false, // keep it open
+		EndHeaders:    true,
+	})
+	<-inHandler
+	if err := st.fr.WriteRSTStream(1, ErrCodeCancel); err != nil {
+		t.Fatal(err)
+	}
+	wroteRST <- true
+	st.awaitIdle()
+	select {
+	case <-headerWritten:
+	case <-time.After(2 * time.Second):
+		t.Error("timeout waiting for header write")
+	}
+	unblockHandler <- true
 }
 
 func TestServer_DeadConn_Unblocks_Read(t *testing.T) {
@@ -2039,12 +2116,9 @@ func TestServer_Advertises_Common_Cipher(t *testing.T) {
 		c.CipherSuites = []uint16{requiredSuite}
 	}, func(ts *httptest.Server) {
 		var srv *http.Server = ts.Config
-		// Have the server configured with one specific cipher suite
-		// which is banned. This tests that ConfigureServer ends up
-		// adding the good one to this list.
-		srv.TLSConfig = &tls.Config{
-			CipherSuites: []uint16{tls.TLS_RSA_WITH_AES_128_CBC_SHA}, // just a banned one
-		}
+		// Have the server configured with no specific cipher suites.
+		// This tests that Go's defaults include the required one.
+		srv.TLSConfig = nil
 	})
 	defer st.Close()
 	st.greet()
@@ -2133,6 +2207,9 @@ func testServerWithCurl(t *testing.T, permitProhibitedCipherSuites bool) {
 	if runtime.GOOS != "linux" {
 		t.Skip("skipping Docker test when not on Linux; requires --net which won't work with boot2docker anyway")
 	}
+	if testing.Short() {
+		t.Skip("skipping curl test in short mode")
+	}
 	requireCurl(t)
 	const msg = "Hello from curl!\n"
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -2167,11 +2244,15 @@ func testServerWithCurl(t *testing.T, permitProhibitedCipherSuites bool) {
 		if err, ok := res.(error); ok {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(res.([]byte)), "foo: Bar") {
+		body := string(res.([]byte))
+		// Search for both "key: value" and "key:value", since curl changed their format
+		// Our Dockerfile contains the latest version (no space), but just in case people
+		// didn't rebuild, check both.
+		if !strings.Contains(body, "foo: Bar") && !strings.Contains(body, "foo:Bar") {
 			t.Errorf("didn't see foo: Bar header")
-			t.Logf("Got: %s", res)
+			t.Logf("Got: %s", body)
 		}
-		if !strings.Contains(string(res.([]byte)), "client-proto: HTTP/2") {
+		if !strings.Contains(body, "client-proto: HTTP/2") && !strings.Contains(body, "client-proto:HTTP/2") {
 			t.Errorf("didn't see client-proto: HTTP/2 header")
 			t.Logf("Got: %s", res)
 		}
@@ -2185,6 +2266,35 @@ func testServerWithCurl(t *testing.T, permitProhibitedCipherSuites bool) {
 
 	if atomic.LoadInt32(&gotConn) == 0 {
 		t.Error("never saw an http2 connection")
+	}
+}
+
+var doh2load = flag.Bool("h2load", false, "Run h2load test")
+
+func TestServerWithH2Load(t *testing.T) {
+	if !*doh2load {
+		t.Skip("Skipping without --h2load flag.")
+	}
+	if runtime.GOOS != "linux" {
+		t.Skip("skipping Docker test when not on Linux; requires --net which won't work with boot2docker anyway")
+	}
+	requireH2load(t)
+
+	msg := strings.Repeat("Hello, h2load!\n", 5000)
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, msg)
+		w.(http.Flusher).Flush()
+		io.WriteString(w, msg)
+	}))
+	ts.StartTLS()
+	defer ts.Close()
+
+	cmd := exec.Command("docker", "run", "--net=host", "--entrypoint=/usr/local/bin/h2load", "gohttp2/curl",
+		"-n100000", "-c100", "-m100", ts.URL)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -2251,9 +2361,87 @@ func TestServerDoS_MaxHeaderListSize(t *testing.T) {
 		st.fr.WriteContinuation(1, len(b) == 0, chunk)
 	}
 
-	fr, err := st.fr.ReadFrame()
-	if err == nil {
-		t.Fatalf("want error; got unexpected frame: %#v", fr)
+	h := st.wantHeaders()
+	if !h.HeadersEnded() {
+		t.Fatalf("Got HEADERS without END_HEADERS set: %v", h)
+	}
+	headers := decodeHeader(t, h.HeaderBlockFragment())
+	want := [][2]string{
+		{":status", "431"},
+		{"content-type", "text/html; charset=utf-8"},
+		{"content-length", "63"},
+	}
+	if !reflect.DeepEqual(headers, want) {
+		t.Errorf("Headers mismatch.\n got: %q\nwant: %q\n", headers, want)
+	}
+}
+
+func TestCompressionErrorOnWrite(t *testing.T) {
+	const maxStrLen = 8 << 10
+	var serverConfig *http.Server
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		// No response body.
+	}, func(ts *httptest.Server) {
+		serverConfig = ts.Config
+		serverConfig.MaxHeaderBytes = maxStrLen
+	})
+	defer st.Close()
+	st.greet()
+
+	maxAllowed := st.sc.maxHeaderStringLen()
+
+	// Crank this up, now that we have a conn connected with the
+	// hpack.Decoder's max string length set has been initialized
+	// from the earlier low ~8K value. We want this higher so don't
+	// hit the max header list size. We only want to test hitting
+	// the max string size.
+	serverConfig.MaxHeaderBytes = 1 << 20
+
+	// First a request with a header that's exactly the max allowed size.
+	hbf := st.encodeHeader("foo", strings.Repeat("a", maxAllowed))
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1,
+		BlockFragment: hbf,
+		EndStream:     true,
+		EndHeaders:    true,
+	})
+	h := st.wantHeaders()
+	if !h.HeadersEnded() || !h.StreamEnded() {
+		t.Errorf("Unexpected HEADER frame %v", h)
+	}
+
+	// And now send one that's just one byte too big.
+	hbf = st.encodeHeader("bar", strings.Repeat("b", maxAllowed+1))
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      3,
+		BlockFragment: hbf,
+		EndStream:     true,
+		EndHeaders:    true,
+	})
+	ga := st.wantGoAway()
+	if ga.ErrCode != ErrCodeCompression {
+		t.Errorf("GOAWAY err = %v; want ErrCodeCompression", ga.ErrCode)
+	}
+}
+
+func TestCompressionErrorOnClose(t *testing.T) {
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		// No response body.
+	})
+	defer st.Close()
+	st.greet()
+
+	hbf := st.encodeHeader("foo", "bar")
+	hbf = hbf[:len(hbf)-1] // truncate one byte from the end, so hpack.Decoder.Close fails.
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1,
+		BlockFragment: hbf,
+		EndStream:     true,
+		EndHeaders:    true,
+	})
+	ga := st.wantGoAway()
+	if ga.ErrCode != ErrCodeCompression {
+		t.Errorf("GOAWAY err = %v; want ErrCodeCompression", ga.ErrCode)
 	}
 }
 
@@ -2316,6 +2504,119 @@ func BenchmarkServerPosts(b *testing.B) {
 		df := st.wantData()
 		if !df.StreamEnded() {
 			b.Fatalf("DATA didn't have END_STREAM; got %v", df)
+		}
+	}
+}
+
+// go-fuzz bug, originally reported at https://github.com/bradfitz/http2/issues/53
+// Verify we don't hang.
+func TestIssue53(t *testing.T) {
+	const data = "PRI * HTTP/2.0\r\n\r\nSM" +
+		"\r\n\r\n\x00\x00\x00\x01\ainfinfin\ad"
+	s := &http.Server{
+		ErrorLog: log.New(io.MultiWriter(stderrv(), twriter{t: t}), "", log.LstdFlags),
+	}
+	s2 := &Server{MaxReadFrameSize: 1 << 16, PermitProhibitedCipherSuites: true}
+	c := &issue53Conn{[]byte(data), false, false}
+	s2.handleConn(s, c, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Write([]byte("hello"))
+	}))
+	if !c.closed {
+		t.Fatal("connection is not closed")
+	}
+}
+
+type issue53Conn struct {
+	data    []byte
+	closed  bool
+	written bool
+}
+
+func (c *issue53Conn) Read(b []byte) (n int, err error) {
+	if len(c.data) == 0 {
+		return 0, io.EOF
+	}
+	n = copy(b, c.data)
+	c.data = c.data[n:]
+	return
+}
+
+func (c *issue53Conn) Write(b []byte) (n int, err error) {
+	c.written = true
+	return len(b), nil
+}
+
+func (c *issue53Conn) Close() error {
+	c.closed = true
+	return nil
+}
+
+func (c *issue53Conn) LocalAddr() net.Addr                { return &net.TCPAddr{net.IP{127, 0, 0, 1}, 49706, ""} }
+func (c *issue53Conn) RemoteAddr() net.Addr               { return &net.TCPAddr{net.IP{127, 0, 0, 1}, 49706, ""} }
+func (c *issue53Conn) SetDeadline(t time.Time) error      { return nil }
+func (c *issue53Conn) SetReadDeadline(t time.Time) error  { return nil }
+func (c *issue53Conn) SetWriteDeadline(t time.Time) error { return nil }
+
+// golang.org/issue/12895
+func TestConfigureServer(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      http.Server
+		wantErr string
+	}{
+		{
+			name: "empty server",
+			in:   http.Server{},
+		},
+		{
+			name: "just the required cipher suite",
+			in: http.Server{
+				TLSConfig: &tls.Config{
+					CipherSuites: []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256},
+				},
+			},
+		},
+		{
+			name: "missing required cipher suite",
+			in: http.Server{
+				TLSConfig: &tls.Config{
+					CipherSuites: []uint16{tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384},
+				},
+			},
+			wantErr: "is missing HTTP/2-required TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+		},
+		{
+			name: "required after bad",
+			in: http.Server{
+				TLSConfig: &tls.Config{
+					CipherSuites: []uint16{tls.TLS_RSA_WITH_RC4_128_SHA, tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256},
+				},
+			},
+			wantErr: "contains an HTTP/2-approved cipher suite (0xc02f), but it comes after",
+		},
+		{
+			name: "bad after required",
+			in: http.Server{
+				TLSConfig: &tls.Config{
+					CipherSuites: []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, tls.TLS_RSA_WITH_RC4_128_SHA},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		err := ConfigureServer(&tt.in, nil)
+		if (err != nil) != (tt.wantErr != "") {
+			if tt.wantErr != "" {
+				t.Errorf("%s: success, but want error", tt.name)
+			} else {
+				t.Errorf("%s: unexpected error: %v", tt.name, err)
+			}
+		}
+		if err != nil && tt.wantErr != "" && !strings.Contains(err.Error(), tt.wantErr) {
+			t.Errorf("%s: err = %v; want substring %q", tt.name, err, tt.wantErr)
+		}
+		if err == nil && !tt.in.TLSConfig.PreferServerCipherSuites {
+			t.Error("%s: PreferServerCipherSuite is false; want true", tt.name)
 		}
 	}
 }

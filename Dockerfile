@@ -1,10 +1,11 @@
 FROM centurylink/ca-certs
+MAINTAINER Sercan Degirmenci <sercan@otsimo.com>
 
-ADD ./bin/notification-linux-amd64 /notification/
-ADD config.yml /notification/
+ADD ./bin/notification-linux-amd64 /notification/simple-notifications
+#ADD config.yml /notification/
 
 WORKDIR /notification
 
-EXPOSE 18844
+#EXPOSE 18844
 
-CMD ["./notification-linux-amd64","--config","config.yml"]
+#CMD ["./simple-notifications","--config","config.yml"]
