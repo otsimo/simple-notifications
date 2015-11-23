@@ -1,13 +1,12 @@
 package template
 
-import "io/ioutil"
-
 import (
 	"bytes"
+	htmltemp "html/template"
 	"path/filepath"
 	"strings"
 	texttemp "text/template"
-
+	"io/ioutil"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -28,7 +27,8 @@ type Template struct {
 	Language string
 	Path     string
 	FullName string
-	raw      *texttemp.Template
+	text     *texttemp.Template
+	html     *htmltemp.Template
 }
 
 type TemplateGroup struct {
@@ -55,6 +55,7 @@ func (t *TemplateGroup) GetText(templateType TemplateType, language, defaultLang
 			return ""
 		}
 	}
+
 	if txt, err := f.PrintText(data); err == nil {
 		return txt.String()
 	} else {
@@ -70,6 +71,7 @@ func getTemplateType(fileName string) TemplateType {
 	}
 	return TemplateType(ext[1:])
 }
+
 func getLanguage(fileName string) string {
 	ext := filepath.Ext(fileName)
 	fileName = strings.TrimRight(fileName, ext)
@@ -130,26 +132,40 @@ func SearchTemplates(root string, cache bool) map[string]*TemplateGroup {
 	return res
 }
 
+func (t *Template) ReadText() ([]byte, error) {
+	return ioutil.ReadFile(t.Path)
+}
+
 func (t *Template) CacheText() error {
 	data, err := t.ReadText()
 	if err != nil {
 		return err
 	}
-	t.raw, err = texttemp.New(t.FullName).Parse(string(data))
+	if t.Type == TemplateHtml {
+		t.html, err = htmltemp.New(t.FullName).Parse(string(data))
+	} else {
+		t.text, err = texttemp.New(t.FullName).Parse(string(data))
+	}
 	return err
 }
 
-func (t *Template) ReadText() ([]byte, error) {
-	return ioutil.ReadFile(t.Path)
-}
-
 func (t *Template) PrintText(data interface{}) (*bytes.Buffer, error) {
-	if t.raw == nil {
-		err := t.CacheText()
-		return nil, err
-	}
 	var doc bytes.Buffer
-	err := t.raw.Execute(&doc, data)
+	var err error
+
+	if t.html == nil && t.text == nil {
+		err := t.CacheText()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if t.Type == TemplateHtml {
+		err = t.html.Execute(&doc, data)
+	} else {
+		err = t.text.Execute(&doc, data)
+	}
+
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,7 @@
 		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
-			"revision": "fe6f2b03125e4fcafb21406381010e363a072c80",
+			"revision": "cdaedc68f2894175ac2b3221869685602c759e71",
 			"branch": "master"
 		},
 		{
@@ -16,7 +16,7 @@
 		{
 			"importpath": "github.com/bugsnag/bugsnag-go",
 			"repository": "https://github.com/bugsnag/bugsnag-go",
-			"revision": "72ff9e15e8c5ae52e8db1dd5dd1f77a9f2f1a895",
+			"revision": "02e952891c52fbcb15f113d90633897355783b6e",
 			"branch": "master"
 		},
 		{
@@ -28,41 +28,41 @@
 		{
 			"importpath": "github.com/codegangsta/cli",
 			"repository": "https://github.com/codegangsta/cli",
-			"revision": "70e3fa51ebed95df8c0fbe1519c1c1f9bc16bb13",
+			"revision": "0302d3914d2a6ad61404584cdae6e6dbc9c03599",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/coreos/etcd/Godeps/_workspace/src/github.com/ugorji/go/codec",
 			"repository": "https://github.com/coreos/etcd",
-			"revision": "2840260b3becbf108688ad865fe470a58eadaef5",
+			"revision": "d435d443bb7659a2ff400c185fe5c6eea9fc81ed",
 			"branch": "master",
 			"path": "/Godeps/_workspace/src/github.com/ugorji/go/codec"
 		},
 		{
 			"importpath": "github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context",
 			"repository": "https://github.com/coreos/etcd",
-			"revision": "2840260b3becbf108688ad865fe470a58eadaef5",
+			"revision": "d435d443bb7659a2ff400c185fe5c6eea9fc81ed",
 			"branch": "master",
 			"path": "/Godeps/_workspace/src/golang.org/x/net/context"
 		},
 		{
 			"importpath": "github.com/coreos/etcd/client",
 			"repository": "https://github.com/coreos/etcd",
-			"revision": "2840260b3becbf108688ad865fe470a58eadaef5",
+			"revision": "d435d443bb7659a2ff400c185fe5c6eea9fc81ed",
 			"branch": "master",
 			"path": "/client"
 		},
 		{
 			"importpath": "github.com/coreos/etcd/pkg/pathutil",
 			"repository": "https://github.com/coreos/etcd",
-			"revision": "2840260b3becbf108688ad865fe470a58eadaef5",
+			"revision": "d435d443bb7659a2ff400c185fe5c6eea9fc81ed",
 			"branch": "master",
 			"path": "/pkg/pathutil"
 		},
 		{
 			"importpath": "github.com/coreos/etcd/pkg/types",
 			"repository": "https://github.com/coreos/etcd",
-			"revision": "2840260b3becbf108688ad865fe470a58eadaef5",
+			"revision": "d435d443bb7659a2ff400c185fe5c6eea9fc81ed",
 			"branch": "master",
 			"path": "/pkg/types"
 		},
@@ -76,7 +76,7 @@
 		{
 			"importpath": "github.com/gogo/protobuf/sortkeys",
 			"repository": "https://github.com/gogo/protobuf",
-			"revision": "04145330265d088c218da8916c50eab3814c76a0",
+			"revision": "d3235f01ecae4901dd9f7ea6af57a352c0189deb",
 			"branch": "master",
 			"path": "/sortkeys"
 		},
@@ -89,7 +89,7 @@
 		{
 			"importpath": "github.com/golang/protobuf/proto",
 			"repository": "https://github.com/golang/protobuf",
-			"revision": "efcaa340c1a788c79e1ca31217d66aa41c405a51",
+			"revision": "57346232f21afd1b0138cc10fbdd43c4d17e6c16",
 			"branch": "master",
 			"path": "/proto"
 		},
@@ -126,7 +126,7 @@
 		{
 			"importpath": "github.com/ugorji/go/codec",
 			"repository": "https://github.com/ugorji/go",
-			"revision": "f1f1a805ed361a0e078bb537e4ea78cd37dcf065",
+			"revision": "ea9cd21fa0bc41ee4bdd50ac7ed8cbc7ea2ed960",
 			"branch": "master",
 			"path": "/codec"
 		},
@@ -140,69 +140,69 @@
 		{
 			"importpath": "golang.org/x/crypto/cast5",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "c8b9e6388ef638d5a8a9d865c634befdc46a6784",
+			"revision": "beef0f4390813b96e8e68fd78570396d0f4751fc",
 			"branch": "master",
 			"path": "/cast5"
 		},
 		{
 			"importpath": "golang.org/x/crypto/openpgp",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "c8b9e6388ef638d5a8a9d865c634befdc46a6784",
+			"revision": "beef0f4390813b96e8e68fd78570396d0f4751fc",
 			"branch": "master",
 			"path": "/openpgp"
 		},
 		{
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
-			"revision": "c95266fa704a83c2716406ae957772a273e1380d",
+			"revision": "4f2fc6c1e69d41baf187332ee08fbd2b296f21ed",
 			"branch": "master",
 			"path": "/context"
 		},
 		{
 			"importpath": "golang.org/x/net/http2",
 			"repository": "https://go.googlesource.com/net",
-			"revision": "c95266fa704a83c2716406ae957772a273e1380d",
+			"revision": "4f2fc6c1e69d41baf187332ee08fbd2b296f21ed",
 			"branch": "master",
 			"path": "/http2"
 		},
 		{
 			"importpath": "golang.org/x/net/internal/timeseries",
 			"repository": "https://go.googlesource.com/net",
-			"revision": "c95266fa704a83c2716406ae957772a273e1380d",
+			"revision": "4f2fc6c1e69d41baf187332ee08fbd2b296f21ed",
 			"branch": "master",
 			"path": "/internal/timeseries"
 		},
 		{
 			"importpath": "golang.org/x/net/trace",
 			"repository": "https://go.googlesource.com/net",
-			"revision": "c95266fa704a83c2716406ae957772a273e1380d",
+			"revision": "4f2fc6c1e69d41baf187332ee08fbd2b296f21ed",
 			"branch": "master",
 			"path": "/trace"
 		},
 		{
 			"importpath": "golang.org/x/oauth2",
 			"repository": "https://go.googlesource.com/oauth2",
-			"revision": "038cb4adce85ed41e285c2e7cc6221a92bfa44aa",
+			"revision": "442624c9ec9243441e83b374a9e22ac549b5c51d",
 			"branch": "master"
 		},
 		{
 			"importpath": "google.golang.org/cloud/compute/metadata",
 			"repository": "https://code.googlesource.com/gocloud",
-			"revision": "6f59fbd92e76d22a49bc08c630337a8309d73f15",
+			"revision": "975617b05ea8a58727e6c1a06b6161ff4185a9f2",
 			"branch": "master",
 			"path": "/compute/metadata"
 		},
 		{
 			"importpath": "google.golang.org/cloud/internal",
 			"repository": "https://code.googlesource.com/gocloud",
-			"revision": "6f59fbd92e76d22a49bc08c630337a8309d73f15",
+			"revision": "975617b05ea8a58727e6c1a06b6161ff4185a9f2",
 			"branch": "master",
 			"path": "/internal"
 		},
 		{
 			"importpath": "google.golang.org/grpc",
 			"repository": "https://github.com/grpc/grpc-go",
-			"revision": "174192fc93efcb188fc8f46ca447f0da606b6885",
+			"revision": "2011d72ca3b5637b963367c586bacce50ff08bf7",
 			"branch": "master"
 		},
 		{

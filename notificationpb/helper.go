@@ -1,5 +1,9 @@
 package notificationpb
-import "fmt"
+
+import (
+	"fmt"
+	"encoding/json"
+)
 
 func NewEmailTarget(email *Email) *Target {
 	return &Target{
@@ -54,7 +58,6 @@ func NewTargets(targets ...interface{}) []*Target {
 	return r
 }
 
-
 func NewMessageTargetResponse(resultType int32, target, driver string) *MessageTargetResponse {
 	return &MessageTargetResponse{
 		Type:   resultType,
@@ -78,4 +81,11 @@ func NewCustomMessageResponse(resultType int32, resultText string, results []*Me
 		Data:    resultText,
 		Results: results,
 	}
+}
+
+func Map2Str(data map[string]interface{}) string {
+	if out, err := json.Marshal(data); err == nil {
+		return string(out)
+	}
+	return "{}"
 }

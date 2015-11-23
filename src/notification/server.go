@@ -64,8 +64,8 @@ func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.Send
 	results := make([]*pb.MessageTargetResponse, 0)
 
 	if temp == nil {
-		return pb.NewCustomMessageResponse(pb.ResultTemplateGroupNotFound,
-			fmt.Sprintf("template=%s not found", in.Event), results), nil
+		return pb.NewCustomMessageResponse(pb.ResultEventNotFound,
+			fmt.Sprintf("event=%s not found", in.Event), results), nil
 	}
 
 	for _, t := range in.Targets {
@@ -73,7 +73,7 @@ func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.Send
 		if len(ty) > 0 {
 			driver := server.Drivers[ty]
 			if driver != nil {
-				err := driver.Send(in.Language, server.Config.DefaultLanguage, t, temp)
+				err := driver.Send(drivers.NewEventData(in.Language, server.Config.DefaultLanguage, t, temp))
 				if err != nil {
 					results = append(results, &pb.MessageTargetResponse{Type: pb.ResultInternalDriverError, Data: fmt.Sprint(err)})
 				} else {

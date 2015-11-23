@@ -3,7 +3,6 @@ package sendgrid
 import (
 	"notification/drivers"
 	"notification/template"
-	pb "notificationpb"
 
 	log "github.com/Sirupsen/logrus"
 	sendgrid "github.com/sendgrid/sendgrid-go"
@@ -20,7 +19,7 @@ func init() {
 
 func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	d := &SendGridDriver{}
-	
+
 	if config["apiUser"] != nil {
 		d.Client = sendgrid.NewSendGridClient(config["apiUser"].(string), config["apiKey"].(string))
 	} else {
@@ -50,8 +49,9 @@ func (d SendGridDriver) Type() string {
 	return drivers.TypeEmail
 }
 
-func (d *SendGridDriver) Send(language, defaultLang string, t *pb.Target, temp *template.TemplateGroup) error {
-	m := t.GetEmail()
+func (d *SendGridDriver) Send(data drivers.EventData) error {
+	m := data.Target.GetEmail()
+	md := data.GetEmailData()
 
 	message := sendgrid.NewMail()
 
@@ -60,7 +60,7 @@ func (d *SendGridDriver) Send(language, defaultLang string, t *pb.Target, temp *
 	} else {
 		message.SetFrom(d.DefaultFromEmail)
 	}
-	
+
 	message.AddTos(m.ToEmail)
 	message.AddCcs(m.Cc)
 	message.AddBccs(m.Bcc)
@@ -76,20 +76,20 @@ func (d *SendGridDriver) Send(language, defaultLang string, t *pb.Target, temp *
 		message.SetFromName(d.DefaultFromName)
 	}
 
-	if txt := temp.GetText(template.TemplateHtml, language, defaultLang, m.Data); len(txt) > 0 {
+	if txt := data.GetHtml(md); len(txt) > 0 {
 		message.SetHTML(txt)
 	}
 
-	if txt := temp.GetText(template.TemplateText, language, defaultLang, m.Data); len(txt) > 0 {
+	if txt := data.GetText(template.TemplateText, md); len(txt) > 0 {
 		message.SetText(txt)
 	}
 
-	if txt := temp.GetText(template.TemplateEmailSubject, language, defaultLang, m.Data); len(txt) > 0 {
+	if txt := data.GetText(template.TemplateEmailSubject, md); len(txt) > 0 {
 		message.SetSubject(txt)
 	} else {
 		message.SetSubject(m.Subject)
 	}
-	
+
 	r := d.Client.Send(message)
 	if r != nil {
 		log.Errorln(r)

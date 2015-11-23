@@ -29,9 +29,11 @@ func main() {
 		//Language: "en",
 		Targets: pb.NewTargets(
 			&pb.Email{
-				ToEmail: []string{"degirmencisercan@gmail.com"},
-				Cc:      []string{"sercan@otsimo.com"},
-				Data:    map[string]string{"name": "sercan"},
+				ToEmail:  []string{"degirmencisercan@gmail.com"},
+				Cc:       []string{"sercan@otsimo.com"},
+				DataJson: pb.Map2Str(map[string]interface{}{
+					"name":"Sercan",
+					"count":1, }),
 			},
 			&pb.Sms{
 				To: []string{"+21123124", "+123124"},
@@ -42,7 +44,7 @@ func main() {
 	}
 
 	r, err := c.SendMessage(context.Background(), message)
-	
+
 	if err != nil {
 		log.Fatalf("could not send message: %v", err)
 	}

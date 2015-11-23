@@ -49,7 +49,7 @@ type Email struct {
 	Bcc        []string          `protobuf:"bytes,7,rep,name=bcc" json:"bcc,omitempty"`
 	ReplyTo    string            `protobuf:"bytes,8,opt,name=reply_to,proto3" json:"reply_to,omitempty"`
 	Parameters map[string]string `protobuf:"bytes,9,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Data       map[string]string `protobuf:"bytes,10,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DataJson   string            `protobuf:"bytes,11,opt,name=data_json,proto3" json:"data_json,omitempty"`
 }
 
 func (m *Email) Reset()         { *m = Email{} }
@@ -59,7 +59,7 @@ func (*Email) ProtoMessage()    {}
 type Sms struct {
 	To         []string          `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
 	Parameters map[string]string `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Data       map[string]string `protobuf:"bytes,3,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DataJson   string            `protobuf:"bytes,4,opt,name=data_json,proto3" json:"data_json,omitempty"`
 }
 
 func (m *Sms) Reset()         { *m = Sms{} }
@@ -69,7 +69,7 @@ func (*Sms) ProtoMessage()    {}
 type Push struct {
 	To         []string          `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
 	Parameters map[string]string `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Data       map[string]string `protobuf:"bytes,3,rep,name=data" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DataJson   string            `protobuf:"bytes,5,opt,name=data_json,proto3" json:"data_json,omitempty"`
 }
 
 func (m *Push) Reset()         { *m = Push{} }
@@ -417,27 +417,11 @@ func (m *Email) MarshalTo(data []byte) (int, error) {
 			i += copy(data[i:], v)
 		}
 	}
-	if len(m.Data) > 0 {
-		keysForData := make([]string, 0, len(m.Data))
-		for k, _ := range m.Data {
-			keysForData = append(keysForData, k)
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForData)
-		for _, k := range keysForData {
-			data[i] = 0x52
-			i++
-			v := m.Data[k]
-			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			i = encodeVarintService(data, i, uint64(mapSize))
-			data[i] = 0xa
-			i++
-			i = encodeVarintService(data, i, uint64(len(k)))
-			i += copy(data[i:], k)
-			data[i] = 0x12
-			i++
-			i = encodeVarintService(data, i, uint64(len(v)))
-			i += copy(data[i:], v)
-		}
+	if len(m.DataJson) > 0 {
+		data[i] = 0x5a
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
+		i += copy(data[i:], m.DataJson)
 	}
 	return i, nil
 }
@@ -494,27 +478,11 @@ func (m *Sms) MarshalTo(data []byte) (int, error) {
 			i += copy(data[i:], v)
 		}
 	}
-	if len(m.Data) > 0 {
-		keysForData := make([]string, 0, len(m.Data))
-		for k, _ := range m.Data {
-			keysForData = append(keysForData, k)
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForData)
-		for _, k := range keysForData {
-			data[i] = 0x1a
-			i++
-			v := m.Data[k]
-			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			i = encodeVarintService(data, i, uint64(mapSize))
-			data[i] = 0xa
-			i++
-			i = encodeVarintService(data, i, uint64(len(k)))
-			i += copy(data[i:], k)
-			data[i] = 0x12
-			i++
-			i = encodeVarintService(data, i, uint64(len(v)))
-			i += copy(data[i:], v)
-		}
+	if len(m.DataJson) > 0 {
+		data[i] = 0x22
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
+		i += copy(data[i:], m.DataJson)
 	}
 	return i, nil
 }
@@ -571,27 +539,11 @@ func (m *Push) MarshalTo(data []byte) (int, error) {
 			i += copy(data[i:], v)
 		}
 	}
-	if len(m.Data) > 0 {
-		keysForData := make([]string, 0, len(m.Data))
-		for k, _ := range m.Data {
-			keysForData = append(keysForData, k)
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForData)
-		for _, k := range keysForData {
-			data[i] = 0x1a
-			i++
-			v := m.Data[k]
-			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			i = encodeVarintService(data, i, uint64(mapSize))
-			data[i] = 0xa
-			i++
-			i = encodeVarintService(data, i, uint64(len(k)))
-			i += copy(data[i:], k)
-			data[i] = 0x12
-			i++
-			i = encodeVarintService(data, i, uint64(len(v)))
-			i += copy(data[i:], v)
-		}
+	if len(m.DataJson) > 0 {
+		data[i] = 0x2a
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
+		i += copy(data[i:], m.DataJson)
 	}
 	return i, nil
 }
@@ -870,13 +822,9 @@ func (m *Email) Size() (n int) {
 			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
 		}
 	}
-	if len(m.Data) > 0 {
-		for k, v := range m.Data {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
-		}
+	l = len(m.DataJson)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
 	}
 	return n
 }
@@ -898,13 +846,9 @@ func (m *Sms) Size() (n int) {
 			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
 		}
 	}
-	if len(m.Data) > 0 {
-		for k, v := range m.Data {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
-		}
+	l = len(m.DataJson)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
 	}
 	return n
 }
@@ -926,13 +870,9 @@ func (m *Push) Size() (n int) {
 			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
 		}
 	}
-	if len(m.Data) > 0 {
-		for k, v := range m.Data {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
-		}
+	l = len(m.DataJson)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
 	}
 	return n
 }
@@ -1421,11 +1361,11 @@ func (m *Email) Unmarshal(data []byte) error {
 			}
 			m.Parameters[mapkey] = mapvalue
 			iNdEx = postIndex
-		case 10:
+		case 11:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1435,102 +1375,20 @@ func (m *Email) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
+				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var keykey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				keykey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapkey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapkey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapkey := int(stringLenmapkey)
-			if intStringLenmapkey < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapkey := iNdEx + intStringLenmapkey
-			if postStringIndexmapkey > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapkey := string(data[iNdEx:postStringIndexmapkey])
-			iNdEx = postStringIndexmapkey
-			var valuekey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				valuekey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapvalue uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapvalue |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapvalue := int(stringLenmapvalue)
-			if intStringLenmapvalue < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-			if postStringIndexmapvalue > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapvalue := string(data[iNdEx:postStringIndexmapvalue])
-			iNdEx = postStringIndexmapvalue
-			if m.Data == nil {
-				m.Data = make(map[string]string)
-			}
-			m.Data[mapkey] = mapvalue
+			m.DataJson = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1722,11 +1580,11 @@ func (m *Sms) Unmarshal(data []byte) error {
 			}
 			m.Parameters[mapkey] = mapvalue
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1736,102 +1594,20 @@ func (m *Sms) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
+				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var keykey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				keykey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapkey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapkey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapkey := int(stringLenmapkey)
-			if intStringLenmapkey < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapkey := iNdEx + intStringLenmapkey
-			if postStringIndexmapkey > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapkey := string(data[iNdEx:postStringIndexmapkey])
-			iNdEx = postStringIndexmapkey
-			var valuekey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				valuekey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapvalue uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapvalue |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapvalue := int(stringLenmapvalue)
-			if intStringLenmapvalue < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-			if postStringIndexmapvalue > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapvalue := string(data[iNdEx:postStringIndexmapvalue])
-			iNdEx = postStringIndexmapvalue
-			if m.Data == nil {
-				m.Data = make(map[string]string)
-			}
-			m.Data[mapkey] = mapvalue
+			m.DataJson = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2023,11 +1799,11 @@ func (m *Push) Unmarshal(data []byte) error {
 			}
 			m.Parameters[mapkey] = mapvalue
 			iNdEx = postIndex
-		case 3:
+		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -2037,102 +1813,20 @@ func (m *Push) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
+				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var keykey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				keykey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapkey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapkey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapkey := int(stringLenmapkey)
-			if intStringLenmapkey < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapkey := iNdEx + intStringLenmapkey
-			if postStringIndexmapkey > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapkey := string(data[iNdEx:postStringIndexmapkey])
-			iNdEx = postStringIndexmapkey
-			var valuekey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				valuekey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapvalue uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapvalue |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapvalue := int(stringLenmapvalue)
-			if intStringLenmapvalue < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-			if postStringIndexmapvalue > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapvalue := string(data[iNdEx:postStringIndexmapvalue])
-			iNdEx = postStringIndexmapvalue
-			if m.Data == nil {
-				m.Data = make(map[string]string)
-			}
-			m.Data[mapkey] = mapvalue
+			m.DataJson = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

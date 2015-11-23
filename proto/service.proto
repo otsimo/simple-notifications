@@ -19,19 +19,19 @@ message Email{
     repeated string bcc = 7;
     string reply_to = 8;
     map<string, string> parameters = 9;
-    map<string, string> data = 10;
+    string data_json = 11;
 }
 
 message Sms{
     repeated string to = 1;
     map<string, string> parameters = 2;
-    map<string, string> data = 3;
+    string data_json = 4;
 }
 
 message Push{
     repeated string to = 1;
     map<string, string> parameters = 2;
-    map<string, string> data = 3;
+    string data_json = 5;
 }
 
 message Target{
