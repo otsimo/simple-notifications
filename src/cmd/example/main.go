@@ -25,7 +25,7 @@ func main() {
 	c := pb.NewNotificationServiceClient(conn)
 
 	message := &pb.Message{
-		Template: "welcome",
+		Event: "welcome",
 		//Language: "en",
 		Targets: pb.NewTargets(
 			&pb.Email{
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	r, err := c.SendMessage(context.Background(), message)
-
+	
 	if err != nil {
 		log.Fatalf("could not send message: %v", err)
 	}

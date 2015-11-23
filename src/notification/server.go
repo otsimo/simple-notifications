@@ -58,14 +58,14 @@ func (server *Server) LoadTemplates() {
 }
 
 func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.SendMessageResponse, error) {
-	log.Infof("server.go: SendMessage with template='%s' and language='%s' to #%d target(s)", in.Template, in.Language, len(in.Targets))
+	log.Infof("server.go: SendMessage with event='%s' and language='%s' to #%d target(s)", in.Event, in.Language, len(in.Targets))
 
-	temp := server.GetTemplateGroup(in.Template)
+	temp := server.GetTemplateGroup(in.Event)
 	results := make([]*pb.MessageTargetResponse, 0)
 
 	if temp == nil {
 		return pb.NewCustomMessageResponse(pb.ResultTemplateGroupNotFound,
-			fmt.Sprintf("template=%s not found", in.Template), results), nil
+			fmt.Sprintf("template=%s not found", in.Event), results), nil
 	}
 
 	for _, t := range in.Targets {

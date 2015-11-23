@@ -204,7 +204,7 @@ func _Target_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer)
 }
 
 type Message struct {
-	Template string    `protobuf:"bytes,1,opt,name=template,proto3" json:"template,omitempty"`
+	Event    string    `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
 	Language string    `protobuf:"bytes,2,opt,name=language,proto3" json:"language,omitempty"`
 	SendAt   int64     `protobuf:"varint,3,opt,name=send_at,proto3" json:"send_at,omitempty"`
 	Targets  []*Target `protobuf:"bytes,4,rep,name=targets" json:"targets,omitempty"`
@@ -678,11 +678,11 @@ func (m *Message) MarshalTo(data []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Template) > 0 {
+	if len(m.Event) > 0 {
 		data[i] = 0xa
 		i++
-		i = encodeVarintService(data, i, uint64(len(m.Template)))
-		i += copy(data[i:], m.Template)
+		i = encodeVarintService(data, i, uint64(len(m.Event)))
+		i += copy(data[i:], m.Event)
 	}
 	if len(m.Language) > 0 {
 		data[i] = 0x12
@@ -976,7 +976,7 @@ func (m *Target_Push) Size() (n int) {
 func (m *Message) Size() (n int) {
 	var l int
 	_ = l
-	l = len(m.Template)
+	l = len(m.Event)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -2332,7 +2332,7 @@ func (m *Message) Unmarshal(data []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Template", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Event", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2357,7 +2357,7 @@ func (m *Message) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Template = string(data[iNdEx:postIndex])
+			m.Event = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {

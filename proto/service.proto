@@ -43,7 +43,7 @@ message Target{
 }
 
 message Message {
-    string template = 1;
+    string event = 1;
     string language = 2;   
     int64 send_at = 3;
     repeated Target targets = 4;

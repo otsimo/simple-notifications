@@ -20,7 +20,7 @@ func init() {
 
 func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	d := &SendGridDriver{}
-
+	
 	if config["apiUser"] != nil {
 		d.Client = sendgrid.NewSendGridClient(config["apiUser"].(string), config["apiKey"].(string))
 	} else {
@@ -60,11 +60,10 @@ func (d *SendGridDriver) Send(language, defaultLang string, t *pb.Target, temp *
 	} else {
 		message.SetFrom(d.DefaultFromEmail)
 	}
-
+	
 	message.AddTos(m.ToEmail)
 	message.AddCcs(m.Cc)
 	message.AddBccs(m.Bcc)
-
 	if len(m.ReplyTo) > 0 {
 		message.SetReplyTo(m.ReplyTo)
 	}
@@ -90,7 +89,7 @@ func (d *SendGridDriver) Send(language, defaultLang string, t *pb.Target, temp *
 	} else {
 		message.SetSubject(m.Subject)
 	}
-
+	
 	r := d.Client.Send(message)
 	if r != nil {
 		log.Errorln(r)
