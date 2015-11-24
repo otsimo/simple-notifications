@@ -1,0 +1,4 @@
+Otsimo'ya Hoşgeldiniz! Aşağıdaki linke tıklayarak şifreni ayarla:
+
+Link:
+{{ .link }}

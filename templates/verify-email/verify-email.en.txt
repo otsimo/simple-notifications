@@ -1,0 +1,5 @@
+Hello!
+
+Please verify that your email is {{ .email }} by clicking here:
+
+{{ .link }}
