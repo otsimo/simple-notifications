@@ -8,6 +8,9 @@ build: clean vet
 cross: clean vet
 	script/build cross
 
+docker: clean vet
+	script/build docker
+
 release: clean vet
 	script/build docker
 	script/release

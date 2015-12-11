@@ -134,7 +134,6 @@ func newServerTester(t testing.TB, handler http.HandlerFunc, opts ...interface{}
 		st.cc = cc
 		st.fr = NewFramer(cc, cc)
 	}
-
 	return st
 }
 
@@ -2129,6 +2128,9 @@ func TestServer_Advertises_Common_Cipher(t *testing.T) {
 // creating a new decoder each time.
 func decodeHeader(t *testing.T, headerBlock []byte) (pairs [][2]string) {
 	d := hpack.NewDecoder(initialHeaderTableSize, func(f hpack.HeaderField) {
+		if f.Name == "date" {
+			return
+		}
 		pairs = append(pairs, [2]string{f.Name, f.Value})
 	})
 	if _, err := d.Write(headerBlock); err != nil {
@@ -2211,6 +2213,9 @@ func testServerWithCurl(t *testing.T, permitProhibitedCipherSuites bool) {
 		t.Skip("skipping curl test in short mode")
 	}
 	requireCurl(t)
+	var gotConn int32
+	testHookOnConn = func() { atomic.StoreInt32(&gotConn, 1) }
+
 	const msg = "Hello from curl!\n"
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Foo", "Bar")
@@ -2223,9 +2228,6 @@ func testServerWithCurl(t *testing.T, permitProhibitedCipherSuites bool) {
 	ts.TLS = ts.Config.TLSConfig // the httptest.Server has its own copy of this TLS config
 	ts.StartTLS()
 	defer ts.Close()
-
-	var gotConn int32
-	testHookOnConn = func() { atomic.StoreInt32(&gotConn, 1) }
 
 	t.Logf("Running test server for curl to hit at: %s", ts.URL)
 	container := curl(t, "--silent", "--http2", "--insecure", "-v", ts.URL)
@@ -2618,5 +2620,69 @@ func TestConfigureServer(t *testing.T) {
 		if err == nil && !tt.in.TLSConfig.PreferServerCipherSuites {
 			t.Error("%s: PreferServerCipherSuite is false; want true", tt.name)
 		}
+	}
+}
+
+func TestServerRejectHeadWithBody(t *testing.T) {
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		// No response body.
+	})
+	defer st.Close()
+	st.greet()
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1, // clients send odd numbers
+		BlockFragment: st.encodeHeader(":method", "HEAD"),
+		EndStream:     false, // what we're testing, a bogus HEAD request with body
+		EndHeaders:    true,
+	})
+	st.wantRSTStream(1, ErrCodeProtocol)
+}
+
+func TestServerNoAutoContentLengthOnHead(t *testing.T) {
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		// No response body. (or smaller than one frame)
+	})
+	defer st.Close()
+	st.greet()
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1, // clients send odd numbers
+		BlockFragment: st.encodeHeader(":method", "HEAD"),
+		EndStream:     true,
+		EndHeaders:    true,
+	})
+	h := st.wantHeaders()
+	headers := decodeHeader(t, h.HeaderBlockFragment())
+	want := [][2]string{
+		{":status", "200"},
+		{"content-type", "text/plain; charset=utf-8"},
+	}
+	if !reflect.DeepEqual(headers, want) {
+		t.Errorf("Headers mismatch.\n got: %q\nwant: %q\n", headers, want)
+	}
+}
+
+// golang.org/issue/13495
+func TestServerNoDuplicateContentType(t *testing.T) {
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Header()["Content-Type"] = []string{""}
+		fmt.Fprintf(w, "<html><head></head><body>hi</body></html>")
+	})
+	defer st.Close()
+	st.greet()
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1,
+		BlockFragment: st.encodeHeader(),
+		EndStream:     true,
+		EndHeaders:    true,
+	})
+	h := st.wantHeaders()
+	headers := decodeHeader(t, h.HeaderBlockFragment())
+	want := [][2]string{
+		{":status", "200"},
+		{"content-type", ""},
+		{"content-length", "41"},
+	}
+	if !reflect.DeepEqual(headers, want) {
+		t.Errorf("Headers mismatch.\n got: %q\nwant: %q\n", headers, want)
 	}
 }
