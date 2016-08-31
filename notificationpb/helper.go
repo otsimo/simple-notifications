@@ -1,8 +1,8 @@
 package notificationpb
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 )
 
 func NewEmailTarget(email *Email) *Target {
@@ -58,34 +58,57 @@ func NewTargets(targets ...interface{}) []*Target {
 	return r
 }
 
-func NewMessageTargetResponse(resultType int32, target, driver string) *MessageTargetResponse {
+func NewMessageTargetResponse(resultType int32, driver string) *MessageTargetResponse {
 	return &MessageTargetResponse{
-		Type:   resultType,
-		Data:   errorMessages[resultType],
-		Target: target,
+		Output: errorMessages[resultType],
 		Driver: driver,
 	}
 }
 
 func NewMessageResponse(resultType int32, results []*MessageTargetResponse) *SendMessageResponse {
 	return &SendMessageResponse{
-		Type:    resultType,
-		Data:    errorMessages[resultType],
+		Output:  errorMessages[resultType],
 		Results: results,
 	}
 }
 
-func NewCustomMessageResponse(resultType int32, resultText string, results []*MessageTargetResponse) *SendMessageResponse {
+func NewCustomMessageResponse(output string, results []*MessageTargetResponse) *SendMessageResponse {
 	return &SendMessageResponse{
-		Type:    resultType,
-		Data:    resultText,
+		Output:  output,
 		Results: results,
 	}
 }
 
-func Map2Str(data map[string]interface{}) string {
+func Map2Str(data map[string]interface{}) []byte {
 	if out, err := json.Marshal(data); err == nil {
-		return string(out)
+		return out
 	}
-	return "{}"
+	return []byte("{}")
+}
+
+func (m *Message) GetEmail() *Email {
+	for _, t := range m.Targets {
+		if e := t.GetEmail(); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+func (m *Message) GetSms() *Sms {
+	for _, t := range m.Targets {
+		if e := t.GetSms(); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+func (m *Message) GetPush() *Push {
+	for _, t := range m.Targets {
+		if e := t.GetPush(); e != nil {
+			return e
+		}
+	}
+	return nil
 }

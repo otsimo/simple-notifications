@@ -22,15 +22,12 @@ package notificationpb
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-
-// discarding unused import gogoproto "gogoproto"
+import _ "github.com/gogo/protobuf/gogoproto"
 
 import (
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
-
-import github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
 
 import io "io"
 
@@ -39,42 +36,56 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type Email struct {
-	ToEmail    []string          `protobuf:"bytes,1,rep,name=to_email" json:"to_email,omitempty"`
-	ToName     []string          `protobuf:"bytes,2,rep,name=to_name" json:"to_name,omitempty"`
-	FromEmail  string            `protobuf:"bytes,3,opt,name=from_email,proto3" json:"from_email,omitempty"`
-	FromName   string            `protobuf:"bytes,4,opt,name=from_name,proto3" json:"from_name,omitempty"`
-	Subject    string            `protobuf:"bytes,5,opt,name=subject,proto3" json:"subject,omitempty"`
-	Cc         []string          `protobuf:"bytes,6,rep,name=cc" json:"cc,omitempty"`
-	Bcc        []string          `protobuf:"bytes,7,rep,name=bcc" json:"bcc,omitempty"`
-	ReplyTo    string            `protobuf:"bytes,8,opt,name=reply_to,proto3" json:"reply_to,omitempty"`
-	Parameters map[string]string `protobuf:"bytes,9,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	DataJson   string            `protobuf:"bytes,11,opt,name=data_json,proto3" json:"data_json,omitempty"`
+	ToEmail   []string `protobuf:"bytes,1,rep,name=to_email,json=toEmail" json:"to_email,omitempty"`
+	ToName    []string `protobuf:"bytes,2,rep,name=to_name,json=toName" json:"to_name,omitempty"`
+	FromEmail string   `protobuf:"bytes,3,opt,name=from_email,json=fromEmail,proto3" json:"from_email,omitempty"`
+	FromName  string   `protobuf:"bytes,4,opt,name=from_name,json=fromName,proto3" json:"from_name,omitempty"`
+	Subject   string   `protobuf:"bytes,5,opt,name=subject,proto3" json:"subject,omitempty"`
+	Cc        []string `protobuf:"bytes,6,rep,name=cc" json:"cc,omitempty"`
+	Bcc       []string `protobuf:"bytes,7,rep,name=bcc" json:"bcc,omitempty"`
+	// ReplyTo
+	ReplyTo string `protobuf:"bytes,8,opt,name=reply_to,json=replyTo,proto3" json:"reply_to,omitempty"`
+	// TemplateHtml overrides default template html file
+	TemplateHtml []byte `protobuf:"bytes,9,opt,name=template_html,json=templateHtml,proto3" json:"template_html,omitempty"`
+	// TemplateSub overrides default template subject file
+	TemplateSub []byte `protobuf:"bytes,10,opt,name=template_sub,json=templateSub,proto3" json:"template_sub,omitempty"`
+	// TemplateTxt overrides default template text file
+	TemplateTxt []byte `protobuf:"bytes,11,opt,name=template_txt,json=templateTxt,proto3" json:"template_txt,omitempty"`
 }
 
-func (m *Email) Reset()         { *m = Email{} }
-func (m *Email) String() string { return proto.CompactTextString(m) }
-func (*Email) ProtoMessage()    {}
+func (m *Email) Reset()                    { *m = Email{} }
+func (m *Email) String() string            { return proto.CompactTextString(m) }
+func (*Email) ProtoMessage()               {}
+func (*Email) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{0} }
 
 type Sms struct {
-	To         []string          `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
-	Parameters map[string]string `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	DataJson   string            `protobuf:"bytes,4,opt,name=data_json,proto3" json:"data_json,omitempty"`
+	To []string `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
+	// Template overrides default template file
+	Template []byte `protobuf:"bytes,2,opt,name=template,proto3" json:"template,omitempty"`
 }
 
-func (m *Sms) Reset()         { *m = Sms{} }
-func (m *Sms) String() string { return proto.CompactTextString(m) }
-func (*Sms) ProtoMessage()    {}
+func (m *Sms) Reset()                    { *m = Sms{} }
+func (m *Sms) String() string            { return proto.CompactTextString(m) }
+func (*Sms) ProtoMessage()               {}
+func (*Sms) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{1} }
 
 type Push struct {
-	To         []string          `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
-	Parameters map[string]string `protobuf:"bytes,2,rep,name=parameters" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	DataJson   string            `protobuf:"bytes,5,opt,name=data_json,proto3" json:"data_json,omitempty"`
+	To []string `protobuf:"bytes,1,rep,name=to" json:"to,omitempty"`
+	// Template overrides default template file
+	Template []byte `protobuf:"bytes,2,opt,name=template,proto3" json:"template,omitempty"`
 }
 
-func (m *Push) Reset()         { *m = Push{} }
-func (m *Push) String() string { return proto.CompactTextString(m) }
-func (*Push) ProtoMessage()    {}
+func (m *Push) Reset()                    { *m = Push{} }
+func (m *Push) String() string            { return proto.CompactTextString(m) }
+func (*Push) ProtoMessage()               {}
+func (*Push) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{2} }
 
 type Target struct {
 	// Types that are valid to be assigned to Backend:
@@ -84,9 +95,10 @@ type Target struct {
 	Backend isTarget_Backend `protobuf_oneof:"backend"`
 }
 
-func (m *Target) Reset()         { *m = Target{} }
-func (m *Target) String() string { return proto.CompactTextString(m) }
-func (*Target) ProtoMessage()    {}
+func (m *Target) Reset()                    { *m = Target{} }
+func (m *Target) String() string            { return proto.CompactTextString(m) }
+func (*Target) ProtoMessage()               {}
+func (*Target) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{3} }
 
 type isTarget_Backend interface {
 	isTarget_Backend()
@@ -137,8 +149,8 @@ func (m *Target) GetPush() *Push {
 }
 
 // XXX_OneofFuncs is for the internal use of the proto package.
-func (*Target) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), []interface{}) {
-	return _Target_OneofMarshaler, _Target_OneofUnmarshaler, []interface{}{
+func (*Target) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _Target_OneofMarshaler, _Target_OneofUnmarshaler, _Target_OneofSizer, []interface{}{
 		(*Target_Email)(nil),
 		(*Target_Sms)(nil),
 		(*Target_Push)(nil),
@@ -203,41 +215,83 @@ func _Target_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer)
 	}
 }
 
-type Message struct {
-	Event    string    `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
-	Language string    `protobuf:"bytes,2,opt,name=language,proto3" json:"language,omitempty"`
-	SendAt   int64     `protobuf:"varint,3,opt,name=send_at,proto3" json:"send_at,omitempty"`
-	Targets  []*Target `protobuf:"bytes,4,rep,name=targets" json:"targets,omitempty"`
+func _Target_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*Target)
+	// backend
+	switch x := m.Backend.(type) {
+	case *Target_Email:
+		s := proto.Size(x.Email)
+		n += proto.SizeVarint(1<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *Target_Sms:
+		s := proto.Size(x.Sms)
+		n += proto.SizeVarint(2<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *Target_Push:
+		s := proto.Size(x.Push)
+		n += proto.SizeVarint(3<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
 }
 
-func (m *Message) Reset()         { *m = Message{} }
-func (m *Message) String() string { return proto.CompactTextString(m) }
-func (*Message) ProtoMessage()    {}
+type Message struct {
+	Event      string            `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
+	Language   string            `protobuf:"bytes,2,opt,name=language,proto3" json:"language,omitempty"`
+	ScheduleAt int64             `protobuf:"varint,3,opt,name=schedule_at,json=scheduleAt,proto3" json:"schedule_at,omitempty"`
+	Targets    []*Target         `protobuf:"bytes,4,rep,name=targets" json:"targets,omitempty"`
+	Tags       map[string]string `protobuf:"bytes,5,rep,name=tags" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DataJson   []byte            `protobuf:"bytes,6,opt,name=data_json,json=dataJson,proto3" json:"data_json,omitempty"`
+}
+
+func (m *Message) Reset()                    { *m = Message{} }
+func (m *Message) String() string            { return proto.CompactTextString(m) }
+func (*Message) ProtoMessage()               {}
+func (*Message) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{4} }
 
 type MessageTargetResponse struct {
-	Type   int32  `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
-	Data   string `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Target string `protobuf:"bytes,3,opt,name=target,proto3" json:"target,omitempty"`
-	Driver string `protobuf:"bytes,4,opt,name=driver,proto3" json:"driver,omitempty"`
+	Driver string `protobuf:"bytes,1,opt,name=driver,proto3" json:"driver,omitempty"`
+	Output string `protobuf:"bytes,2,opt,name=output,proto3" json:"output,omitempty"`
 }
 
-func (m *MessageTargetResponse) Reset()         { *m = MessageTargetResponse{} }
-func (m *MessageTargetResponse) String() string { return proto.CompactTextString(m) }
-func (*MessageTargetResponse) ProtoMessage()    {}
+func (m *MessageTargetResponse) Reset()                    { *m = MessageTargetResponse{} }
+func (m *MessageTargetResponse) String() string            { return proto.CompactTextString(m) }
+func (*MessageTargetResponse) ProtoMessage()               {}
+func (*MessageTargetResponse) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{5} }
 
 type SendMessageResponse struct {
-	Type    int32                    `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
-	Data    string                   `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Results []*MessageTargetResponse `protobuf:"bytes,3,rep,name=results" json:"results,omitempty"`
+	Output  string                   `protobuf:"bytes,1,opt,name=output,proto3" json:"output,omitempty"`
+	Results []*MessageTargetResponse `protobuf:"bytes,2,rep,name=results" json:"results,omitempty"`
 }
 
-func (m *SendMessageResponse) Reset()         { *m = SendMessageResponse{} }
-func (m *SendMessageResponse) String() string { return proto.CompactTextString(m) }
-func (*SendMessageResponse) ProtoMessage()    {}
+func (m *SendMessageResponse) Reset()                    { *m = SendMessageResponse{} }
+func (m *SendMessageResponse) String() string            { return proto.CompactTextString(m) }
+func (*SendMessageResponse) ProtoMessage()               {}
+func (*SendMessageResponse) Descriptor() ([]byte, []int) { return fileDescriptorService, []int{6} }
+
+func init() {
+	proto.RegisterType((*Email)(nil), "otsimo.Email")
+	proto.RegisterType((*Sms)(nil), "otsimo.Sms")
+	proto.RegisterType((*Push)(nil), "otsimo.Push")
+	proto.RegisterType((*Target)(nil), "otsimo.Target")
+	proto.RegisterType((*Message)(nil), "otsimo.Message")
+	proto.RegisterType((*MessageTargetResponse)(nil), "otsimo.MessageTargetResponse")
+	proto.RegisterType((*SendMessageResponse)(nil), "otsimo.SendMessageResponse")
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion3
 
 // Client API for NotificationService service
 
@@ -255,7 +309,7 @@ func NewNotificationServiceClient(cc *grpc.ClientConn) NotificationServiceClient
 
 func (c *notificationServiceClient) SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*SendMessageResponse, error) {
 	out := new(SendMessageResponse)
-	err := grpc.Invoke(ctx, "/notificationpb.NotificationService/SendMessage", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/otsimo.NotificationService/SendMessage", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -272,20 +326,26 @@ func RegisterNotificationServiceServer(s *grpc.Server, srv NotificationServiceSe
 	s.RegisterService(&_NotificationService_serviceDesc, srv)
 }
 
-func _NotificationService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _NotificationService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(NotificationServiceServer).SendMessage(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).SendMessage(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/otsimo.NotificationService/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).SendMessage(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _NotificationService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "notificationpb.NotificationService",
+	ServiceName: "otsimo.NotificationService",
 	HandlerType: (*NotificationServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -293,7 +353,8 @@ var _NotificationService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _NotificationService_SendMessage_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: fileDescriptorService,
 }
 
 func (m *Email) Marshal() (data []byte, err error) {
@@ -395,33 +456,23 @@ func (m *Email) MarshalTo(data []byte) (int, error) {
 		i = encodeVarintService(data, i, uint64(len(m.ReplyTo)))
 		i += copy(data[i:], m.ReplyTo)
 	}
-	if len(m.Parameters) > 0 {
-		keysForParameters := make([]string, 0, len(m.Parameters))
-		for k, _ := range m.Parameters {
-			keysForParameters = append(keysForParameters, k)
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForParameters)
-		for _, k := range keysForParameters {
-			data[i] = 0x4a
-			i++
-			v := m.Parameters[k]
-			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			i = encodeVarintService(data, i, uint64(mapSize))
-			data[i] = 0xa
-			i++
-			i = encodeVarintService(data, i, uint64(len(k)))
-			i += copy(data[i:], k)
-			data[i] = 0x12
-			i++
-			i = encodeVarintService(data, i, uint64(len(v)))
-			i += copy(data[i:], v)
-		}
+	if len(m.TemplateHtml) > 0 {
+		data[i] = 0x4a
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.TemplateHtml)))
+		i += copy(data[i:], m.TemplateHtml)
 	}
-	if len(m.DataJson) > 0 {
+	if len(m.TemplateSub) > 0 {
+		data[i] = 0x52
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.TemplateSub)))
+		i += copy(data[i:], m.TemplateSub)
+	}
+	if len(m.TemplateTxt) > 0 {
 		data[i] = 0x5a
 		i++
-		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
-		i += copy(data[i:], m.DataJson)
+		i = encodeVarintService(data, i, uint64(len(m.TemplateTxt)))
+		i += copy(data[i:], m.TemplateTxt)
 	}
 	return i, nil
 }
@@ -456,33 +507,11 @@ func (m *Sms) MarshalTo(data []byte) (int, error) {
 			i += copy(data[i:], s)
 		}
 	}
-	if len(m.Parameters) > 0 {
-		keysForParameters := make([]string, 0, len(m.Parameters))
-		for k, _ := range m.Parameters {
-			keysForParameters = append(keysForParameters, k)
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForParameters)
-		for _, k := range keysForParameters {
-			data[i] = 0x12
-			i++
-			v := m.Parameters[k]
-			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			i = encodeVarintService(data, i, uint64(mapSize))
-			data[i] = 0xa
-			i++
-			i = encodeVarintService(data, i, uint64(len(k)))
-			i += copy(data[i:], k)
-			data[i] = 0x12
-			i++
-			i = encodeVarintService(data, i, uint64(len(v)))
-			i += copy(data[i:], v)
-		}
-	}
-	if len(m.DataJson) > 0 {
-		data[i] = 0x22
+	if len(m.Template) > 0 {
+		data[i] = 0x12
 		i++
-		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
-		i += copy(data[i:], m.DataJson)
+		i = encodeVarintService(data, i, uint64(len(m.Template)))
+		i += copy(data[i:], m.Template)
 	}
 	return i, nil
 }
@@ -517,33 +546,11 @@ func (m *Push) MarshalTo(data []byte) (int, error) {
 			i += copy(data[i:], s)
 		}
 	}
-	if len(m.Parameters) > 0 {
-		keysForParameters := make([]string, 0, len(m.Parameters))
-		for k, _ := range m.Parameters {
-			keysForParameters = append(keysForParameters, k)
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForParameters)
-		for _, k := range keysForParameters {
-			data[i] = 0x12
-			i++
-			v := m.Parameters[k]
-			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			i = encodeVarintService(data, i, uint64(mapSize))
-			data[i] = 0xa
-			i++
-			i = encodeVarintService(data, i, uint64(len(k)))
-			i += copy(data[i:], k)
-			data[i] = 0x12
-			i++
-			i = encodeVarintService(data, i, uint64(len(v)))
-			i += copy(data[i:], v)
-		}
-	}
-	if len(m.DataJson) > 0 {
-		data[i] = 0x2a
+	if len(m.Template) > 0 {
+		data[i] = 0x12
 		i++
-		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
-		i += copy(data[i:], m.DataJson)
+		i = encodeVarintService(data, i, uint64(len(m.Template)))
+		i += copy(data[i:], m.Template)
 	}
 	return i, nil
 }
@@ -642,10 +649,10 @@ func (m *Message) MarshalTo(data []byte) (int, error) {
 		i = encodeVarintService(data, i, uint64(len(m.Language)))
 		i += copy(data[i:], m.Language)
 	}
-	if m.SendAt != 0 {
+	if m.ScheduleAt != 0 {
 		data[i] = 0x18
 		i++
-		i = encodeVarintService(data, i, uint64(m.SendAt))
+		i = encodeVarintService(data, i, uint64(m.ScheduleAt))
 	}
 	if len(m.Targets) > 0 {
 		for _, msg := range m.Targets {
@@ -658,6 +665,29 @@ func (m *Message) MarshalTo(data []byte) (int, error) {
 			}
 			i += n
 		}
+	}
+	if len(m.Tags) > 0 {
+		for k, _ := range m.Tags {
+			data[i] = 0x2a
+			i++
+			v := m.Tags[k]
+			mapSize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
+			i = encodeVarintService(data, i, uint64(mapSize))
+			data[i] = 0xa
+			i++
+			i = encodeVarintService(data, i, uint64(len(k)))
+			i += copy(data[i:], k)
+			data[i] = 0x12
+			i++
+			i = encodeVarintService(data, i, uint64(len(v)))
+			i += copy(data[i:], v)
+		}
+	}
+	if len(m.DataJson) > 0 {
+		data[i] = 0x32
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.DataJson)))
+		i += copy(data[i:], m.DataJson)
 	}
 	return i, nil
 }
@@ -677,28 +707,17 @@ func (m *MessageTargetResponse) MarshalTo(data []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Type != 0 {
-		data[i] = 0x8
-		i++
-		i = encodeVarintService(data, i, uint64(m.Type))
-	}
-	if len(m.Data) > 0 {
-		data[i] = 0x12
-		i++
-		i = encodeVarintService(data, i, uint64(len(m.Data)))
-		i += copy(data[i:], m.Data)
-	}
-	if len(m.Target) > 0 {
-		data[i] = 0x1a
-		i++
-		i = encodeVarintService(data, i, uint64(len(m.Target)))
-		i += copy(data[i:], m.Target)
-	}
 	if len(m.Driver) > 0 {
-		data[i] = 0x22
+		data[i] = 0xa
 		i++
 		i = encodeVarintService(data, i, uint64(len(m.Driver)))
 		i += copy(data[i:], m.Driver)
+	}
+	if len(m.Output) > 0 {
+		data[i] = 0x12
+		i++
+		i = encodeVarintService(data, i, uint64(len(m.Output)))
+		i += copy(data[i:], m.Output)
 	}
 	return i, nil
 }
@@ -718,20 +737,15 @@ func (m *SendMessageResponse) MarshalTo(data []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Type != 0 {
-		data[i] = 0x8
+	if len(m.Output) > 0 {
+		data[i] = 0xa
 		i++
-		i = encodeVarintService(data, i, uint64(m.Type))
-	}
-	if len(m.Data) > 0 {
-		data[i] = 0x12
-		i++
-		i = encodeVarintService(data, i, uint64(len(m.Data)))
-		i += copy(data[i:], m.Data)
+		i = encodeVarintService(data, i, uint64(len(m.Output)))
+		i += copy(data[i:], m.Output)
 	}
 	if len(m.Results) > 0 {
 		for _, msg := range m.Results {
-			data[i] = 0x1a
+			data[i] = 0x12
 			i++
 			i = encodeVarintService(data, i, uint64(msg.Size()))
 			n, err := msg.MarshalTo(data[i:])
@@ -814,15 +828,15 @@ func (m *Email) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
-	if len(m.Parameters) > 0 {
-		for k, v := range m.Parameters {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
-		}
+	l = len(m.TemplateHtml)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
 	}
-	l = len(m.DataJson)
+	l = len(m.TemplateSub)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
+	l = len(m.TemplateTxt)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -838,15 +852,7 @@ func (m *Sms) Size() (n int) {
 			n += 1 + l + sovService(uint64(l))
 		}
 	}
-	if len(m.Parameters) > 0 {
-		for k, v := range m.Parameters {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
-		}
-	}
-	l = len(m.DataJson)
+	l = len(m.Template)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -862,15 +868,7 @@ func (m *Push) Size() (n int) {
 			n += 1 + l + sovService(uint64(l))
 		}
 	}
-	if len(m.Parameters) > 0 {
-		for k, v := range m.Parameters {
-			_ = k
-			_ = v
-			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
-			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
-		}
-	}
-	l = len(m.DataJson)
+	l = len(m.Template)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -924,8 +922,8 @@ func (m *Message) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
-	if m.SendAt != 0 {
-		n += 1 + sovService(uint64(m.SendAt))
+	if m.ScheduleAt != 0 {
+		n += 1 + sovService(uint64(m.ScheduleAt))
 	}
 	if len(m.Targets) > 0 {
 		for _, e := range m.Targets {
@@ -933,24 +931,29 @@ func (m *Message) Size() (n int) {
 			n += 1 + l + sovService(uint64(l))
 		}
 	}
+	if len(m.Tags) > 0 {
+		for k, v := range m.Tags {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sovService(uint64(len(k))) + 1 + len(v) + sovService(uint64(len(v)))
+			n += mapEntrySize + 1 + sovService(uint64(mapEntrySize))
+		}
+	}
+	l = len(m.DataJson)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
 	return n
 }
 
 func (m *MessageTargetResponse) Size() (n int) {
 	var l int
 	_ = l
-	if m.Type != 0 {
-		n += 1 + sovService(uint64(m.Type))
-	}
-	l = len(m.Data)
-	if l > 0 {
-		n += 1 + l + sovService(uint64(l))
-	}
-	l = len(m.Target)
-	if l > 0 {
-		n += 1 + l + sovService(uint64(l))
-	}
 	l = len(m.Driver)
+	if l > 0 {
+		n += 1 + l + sovService(uint64(l))
+	}
+	l = len(m.Output)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -960,10 +963,7 @@ func (m *MessageTargetResponse) Size() (n int) {
 func (m *SendMessageResponse) Size() (n int) {
 	var l int
 	_ = l
-	if m.Type != 0 {
-		n += 1 + sovService(uint64(m.Type))
-	}
-	l = len(m.Data)
+	l = len(m.Output)
 	if l > 0 {
 		n += 1 + l + sovService(uint64(l))
 	}
@@ -1252,9 +1252,9 @@ func (m *Email) Unmarshal(data []byte) error {
 			iNdEx = postIndex
 		case 9:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Parameters", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TemplateHtml", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1264,19 +1264,28 @@ func (m *Email) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
+				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var keykey uint64
+			m.TemplateHtml = append(m.TemplateHtml[:0], data[iNdEx:postIndex]...)
+			if m.TemplateHtml == nil {
+				m.TemplateHtml = []byte{}
+			}
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TemplateSub", wireType)
+			}
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1286,86 +1295,28 @@ func (m *Email) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				keykey |= (uint64(b) & 0x7F) << shift
+				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			var stringLenmapkey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapkey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapkey := int(stringLenmapkey)
-			if intStringLenmapkey < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postStringIndexmapkey := iNdEx + intStringLenmapkey
-			if postStringIndexmapkey > l {
+			postIndex := iNdEx + byteLen
+			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			mapkey := string(data[iNdEx:postStringIndexmapkey])
-			iNdEx = postStringIndexmapkey
-			var valuekey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				valuekey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
+			m.TemplateSub = append(m.TemplateSub[:0], data[iNdEx:postIndex]...)
+			if m.TemplateSub == nil {
+				m.TemplateSub = []byte{}
 			}
-			var stringLenmapvalue uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapvalue |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapvalue := int(stringLenmapvalue)
-			if intStringLenmapvalue < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-			if postStringIndexmapvalue > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapvalue := string(data[iNdEx:postStringIndexmapvalue])
-			iNdEx = postStringIndexmapvalue
-			if m.Parameters == nil {
-				m.Parameters = make(map[string]string)
-			}
-			m.Parameters[mapkey] = mapvalue
 			iNdEx = postIndex
 		case 11:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TemplateTxt", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1375,20 +1326,22 @@ func (m *Email) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
+				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DataJson = string(data[iNdEx:postIndex])
+			m.TemplateTxt = append(m.TemplateTxt[:0], data[iNdEx:postIndex]...)
+			if m.TemplateTxt == nil {
+				m.TemplateTxt = []byte{}
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1471,9 +1424,9 @@ func (m *Sms) Unmarshal(data []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Parameters", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Template", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1483,131 +1436,22 @@ func (m *Sms) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
+				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var keykey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				keykey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
+			m.Template = append(m.Template[:0], data[iNdEx:postIndex]...)
+			if m.Template == nil {
+				m.Template = []byte{}
 			}
-			var stringLenmapkey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapkey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapkey := int(stringLenmapkey)
-			if intStringLenmapkey < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapkey := iNdEx + intStringLenmapkey
-			if postStringIndexmapkey > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapkey := string(data[iNdEx:postStringIndexmapkey])
-			iNdEx = postStringIndexmapkey
-			var valuekey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				valuekey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapvalue uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapvalue |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapvalue := int(stringLenmapvalue)
-			if intStringLenmapvalue < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-			if postStringIndexmapvalue > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapvalue := string(data[iNdEx:postStringIndexmapvalue])
-			iNdEx = postStringIndexmapvalue
-			if m.Parameters == nil {
-				m.Parameters = make(map[string]string)
-			}
-			m.Parameters[mapkey] = mapvalue
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DataJson = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1690,9 +1534,9 @@ func (m *Push) Unmarshal(data []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Parameters", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Template", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -1702,131 +1546,22 @@ func (m *Push) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				msglen |= (int(b) & 0x7F) << shift
+				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthService
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var keykey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				keykey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
+			m.Template = append(m.Template[:0], data[iNdEx:postIndex]...)
+			if m.Template == nil {
+				m.Template = []byte{}
 			}
-			var stringLenmapkey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapkey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapkey := int(stringLenmapkey)
-			if intStringLenmapkey < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapkey := iNdEx + intStringLenmapkey
-			if postStringIndexmapkey > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapkey := string(data[iNdEx:postStringIndexmapkey])
-			iNdEx = postStringIndexmapkey
-			var valuekey uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				valuekey |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			var stringLenmapvalue uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLenmapvalue |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLenmapvalue := int(stringLenmapvalue)
-			if intStringLenmapvalue < 0 {
-				return ErrInvalidLengthService
-			}
-			postStringIndexmapvalue := iNdEx + intStringLenmapvalue
-			if postStringIndexmapvalue > l {
-				return io.ErrUnexpectedEOF
-			}
-			mapvalue := string(data[iNdEx:postStringIndexmapvalue])
-			iNdEx = postStringIndexmapvalue
-			if m.Parameters == nil {
-				m.Parameters = make(map[string]string)
-			}
-			m.Parameters[mapkey] = mapvalue
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DataJson = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2084,9 +1819,9 @@ func (m *Message) Unmarshal(data []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SendAt", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ScheduleAt", wireType)
 			}
-			m.SendAt = 0
+			m.ScheduleAt = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowService
@@ -2096,7 +1831,7 @@ func (m *Message) Unmarshal(data []byte) error {
 				}
 				b := data[iNdEx]
 				iNdEx++
-				m.SendAt |= (int64(b) & 0x7F) << shift
+				m.ScheduleAt |= (int64(b) & 0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2130,6 +1865,153 @@ func (m *Message) Unmarshal(data []byte) error {
 			m.Targets = append(m.Targets, &Target{})
 			if err := m.Targets[len(m.Targets)-1].Unmarshal(data[iNdEx:postIndex]); err != nil {
 				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tags", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var keykey uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				keykey |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			var stringLenmapkey uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLenmapkey |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLenmapkey := int(stringLenmapkey)
+			if intStringLenmapkey < 0 {
+				return ErrInvalidLengthService
+			}
+			postStringIndexmapkey := iNdEx + intStringLenmapkey
+			if postStringIndexmapkey > l {
+				return io.ErrUnexpectedEOF
+			}
+			mapkey := string(data[iNdEx:postStringIndexmapkey])
+			iNdEx = postStringIndexmapkey
+			if m.Tags == nil {
+				m.Tags = make(map[string]string)
+			}
+			if iNdEx < postIndex {
+				var valuekey uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowService
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := data[iNdEx]
+					iNdEx++
+					valuekey |= (uint64(b) & 0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				var stringLenmapvalue uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowService
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := data[iNdEx]
+					iNdEx++
+					stringLenmapvalue |= (uint64(b) & 0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLenmapvalue := int(stringLenmapvalue)
+				if intStringLenmapvalue < 0 {
+					return ErrInvalidLengthService
+				}
+				postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+				if postStringIndexmapvalue > l {
+					return io.ErrUnexpectedEOF
+				}
+				mapvalue := string(data[iNdEx:postStringIndexmapvalue])
+				iNdEx = postStringIndexmapvalue
+				m.Tags[mapkey] = mapvalue
+			} else {
+				var mapvalue string
+				m.Tags[mapkey] = mapvalue
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DataJson", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				byteLen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DataJson = append(m.DataJson[:0], data[iNdEx:postIndex]...)
+			if m.DataJson == nil {
+				m.DataJson = []byte{}
 			}
 			iNdEx = postIndex
 		default:
@@ -2183,83 +2065,6 @@ func (m *MessageTargetResponse) Unmarshal(data []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			m.Type = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				m.Type |= (int32(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Data = string(data[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				stringLen |= (uint64(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthService
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Target = string(data[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Driver", wireType)
 			}
@@ -2287,6 +2092,35 @@ func (m *MessageTargetResponse) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Driver = string(data[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Output", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := data[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Output = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2339,27 +2173,8 @@ func (m *SendMessageResponse) Unmarshal(data []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			m.Type = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowService
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := data[iNdEx]
-				iNdEx++
-				m.Type |= (int32(b) & 0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Output", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -2384,9 +2199,9 @@ func (m *SendMessageResponse) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Data = string(data[iNdEx:postIndex])
+			m.Output = string(data[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Results", wireType)
 			}
@@ -2542,3 +2357,51 @@ var (
 	ErrInvalidLengthService = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowService   = fmt.Errorf("proto: integer overflow")
 )
+
+func init() { proto.RegisterFile("service.proto", fileDescriptorService) }
+
+var fileDescriptorService = []byte{
+	// 660 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x94, 0x54, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0x8e, 0x9d, 0x1f, 0xc7, 0xe3, 0xb6, 0xa0, 0x2d, 0x3f, 0xdb, 0x54, 0x4d, 0x43, 0x00, 0x29,
+	0x97, 0xa6, 0x22, 0x1c, 0x8a, 0xe0, 0x44, 0xa5, 0x8a, 0x08, 0x89, 0x0a, 0x39, 0x39, 0x71, 0x89,
+	0xd6, 0xce, 0xc6, 0x71, 0x6b, 0x7b, 0x2d, 0xef, 0x38, 0x6a, 0x4f, 0x3c, 0x00, 0x2f, 0xc0, 0xab,
+	0xf0, 0x06, 0x3d, 0xf2, 0x08, 0x50, 0x5e, 0x04, 0xed, 0xda, 0x8e, 0xd2, 0x72, 0xe2, 0x36, 0xdf,
+	0x7c, 0xdf, 0xcc, 0x7c, 0xb3, 0xbb, 0x36, 0x6c, 0x4b, 0x9e, 0xad, 0x42, 0x9f, 0x0f, 0xd3, 0x4c,
+	0xa0, 0x20, 0x2d, 0x81, 0x32, 0x8c, 0x45, 0xe7, 0x28, 0x08, 0x71, 0x99, 0x7b, 0x43, 0x5f, 0xc4,
+	0xc7, 0x81, 0x08, 0xc4, 0xb1, 0xa6, 0xbd, 0x7c, 0xa1, 0x91, 0x06, 0x3a, 0x2a, 0xca, 0xfa, 0x3f,
+	0x4c, 0x68, 0x9e, 0xc5, 0x2c, 0x8c, 0xc8, 0x1e, 0xb4, 0x51, 0xcc, 0xb8, 0x8a, 0xa9, 0xd1, 0xab,
+	0x0f, 0x6c, 0xd7, 0x42, 0x51, 0x50, 0x4f, 0xc1, 0x42, 0x31, 0x4b, 0x58, 0xcc, 0xa9, 0xa9, 0x99,
+	0x16, 0x8a, 0x73, 0x16, 0x73, 0x72, 0x00, 0xb0, 0xc8, 0x44, 0x5c, 0x56, 0xd5, 0x7b, 0xc6, 0xc0,
+	0x76, 0x6d, 0x95, 0x29, 0xea, 0xf6, 0x41, 0x83, 0xa2, 0xb2, 0xa1, 0xd9, 0xb6, 0x4a, 0xe8, 0x5a,
+	0x0a, 0x96, 0xcc, 0xbd, 0x0b, 0xee, 0x23, 0x6d, 0x6a, 0xaa, 0x82, 0x64, 0x07, 0x4c, 0xdf, 0xa7,
+	0x2d, 0x3d, 0xc9, 0xf4, 0x7d, 0xf2, 0x10, 0xea, 0x9e, 0xef, 0x53, 0x4b, 0x27, 0x54, 0xa8, 0xbc,
+	0x66, 0x3c, 0x8d, 0xae, 0x67, 0x28, 0x68, 0xbb, 0x28, 0xd6, 0x78, 0x2a, 0xc8, 0x73, 0xd8, 0x46,
+	0x1e, 0xa7, 0x11, 0x43, 0x3e, 0x5b, 0x62, 0x1c, 0x51, 0xbb, 0x67, 0x0c, 0xb6, 0xdc, 0xad, 0x2a,
+	0x39, 0xc6, 0x38, 0x22, 0xcf, 0x60, 0x8d, 0x67, 0x32, 0xf7, 0x28, 0x68, 0x8d, 0x53, 0xe5, 0x26,
+	0xb9, 0x77, 0x47, 0x82, 0x57, 0x48, 0x9d, 0xbb, 0x92, 0xe9, 0x15, 0xf6, 0x5f, 0x41, 0x7d, 0x12,
+	0x4b, 0x65, 0x17, 0x45, 0x79, 0x64, 0x26, 0x0a, 0xd2, 0x81, 0x76, 0xa5, 0xa2, 0xa6, 0xae, 0x5a,
+	0xe3, 0xfe, 0x08, 0x1a, 0x9f, 0x73, 0xb9, 0xfc, 0xaf, 0x9a, 0xaf, 0xd0, 0x9a, 0xb2, 0x2c, 0xe0,
+	0x48, 0x5e, 0x42, 0xb3, 0xba, 0x1f, 0x63, 0xe0, 0x8c, 0xb6, 0x87, 0xc5, 0x9d, 0x0f, 0xf5, 0x69,
+	0x8f, 0x6b, 0x6e, 0xc1, 0x92, 0x43, 0xa8, 0xcb, 0x58, 0xea, 0x3e, 0xce, 0xc8, 0xa9, 0x44, 0x93,
+	0x58, 0x8e, 0x6b, 0xae, 0x62, 0x48, 0x1f, 0x1a, 0x69, 0x2e, 0x97, 0xfa, 0xc2, 0x9c, 0xd1, 0x56,
+	0xa5, 0x50, 0xce, 0xc6, 0x35, 0x57, 0x73, 0xa7, 0x36, 0x58, 0x1e, 0xf3, 0x2f, 0x79, 0x32, 0xef,
+	0x7f, 0x33, 0xc1, 0xfa, 0xc4, 0xa5, 0x64, 0x01, 0x27, 0x8f, 0xa0, 0xc9, 0x57, 0x3c, 0x41, 0x6d,
+	0xc1, 0x76, 0x0b, 0xa0, 0xec, 0x47, 0x2c, 0x09, 0x72, 0x16, 0x14, 0xf6, 0x6d, 0x77, 0x8d, 0xc9,
+	0x21, 0x38, 0xd2, 0x5f, 0xf2, 0x79, 0x1e, 0xf1, 0x19, 0x43, 0x3d, 0xb3, 0xee, 0x42, 0x95, 0x7a,
+	0x8f, 0x64, 0x00, 0x16, 0xea, 0xfd, 0x24, 0x6d, 0xf4, 0xea, 0x03, 0x67, 0xb4, 0x53, 0x19, 0x2a,
+	0xd6, 0x76, 0x2b, 0x9a, 0x1c, 0x41, 0x03, 0x59, 0x20, 0x69, 0x53, 0xcb, 0xf6, 0x2a, 0x59, 0xe9,
+	0x6d, 0x38, 0x65, 0x81, 0x3c, 0x4b, 0x30, 0xbb, 0x76, 0xb5, 0x4c, 0x3d, 0xbf, 0x39, 0x43, 0x36,
+	0xbb, 0x90, 0x22, 0xa1, 0xad, 0xe2, 0x54, 0x55, 0xe2, 0xa3, 0x14, 0x49, 0xe7, 0x04, 0xec, 0xb5,
+	0x5e, 0xbd, 0xb0, 0x4b, 0x7e, 0x5d, 0xee, 0xa4, 0x42, 0xb5, 0xe7, 0x8a, 0x45, 0x79, 0xb5, 0x4e,
+	0x01, 0xde, 0x9a, 0x6f, 0x8c, 0xfe, 0x07, 0x78, 0x5c, 0x0e, 0x2c, 0xed, 0x71, 0x99, 0x8a, 0x44,
+	0x72, 0xf2, 0x04, 0x5a, 0xf3, 0x2c, 0x5c, 0xf1, 0xac, 0xec, 0x53, 0x22, 0x95, 0x17, 0x39, 0xa6,
+	0x39, 0x96, 0xbd, 0x4a, 0xd4, 0x5f, 0xc0, 0xee, 0x84, 0x27, 0xf3, 0xb2, 0xd9, 0x66, 0x9b, 0x52,
+	0x6e, 0x6c, 0xca, 0xc9, 0x09, 0x58, 0x19, 0x97, 0x79, 0x84, 0x52, 0x7f, 0x84, 0xce, 0xe8, 0xe0,
+	0xde, 0xfe, 0x77, 0xed, 0xb8, 0x95, 0x7a, 0xe4, 0xc2, 0xee, 0xb9, 0xc0, 0x70, 0x11, 0xfa, 0x0c,
+	0x43, 0x91, 0x4c, 0x8a, 0xdf, 0x06, 0x79, 0x07, 0xce, 0xc6, 0x78, 0xf2, 0xe0, 0x5e, 0xb7, 0xce,
+	0xfe, 0xfa, 0xe1, 0xfc, 0x6b, 0xf2, 0xf4, 0xc5, 0xcd, 0xef, 0x6e, 0xed, 0xe6, 0xb6, 0x6b, 0xfc,
+	0xbc, 0xed, 0x1a, 0xbf, 0x6e, 0xbb, 0xc6, 0xf7, 0x3f, 0xdd, 0xda, 0x97, 0x9d, 0x64, 0x63, 0x4e,
+	0xea, 0x79, 0x2d, 0xfd, 0x8f, 0x79, 0xfd, 0x37, 0x00, 0x00, 0xff, 0xff, 0x94, 0x57, 0xb7, 0x2d,
+	0xab, 0x04, 0x00, 0x00,
+}

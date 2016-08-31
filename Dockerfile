@@ -1,11 +1,10 @@
-FROM centurylink/ca-certs
+FROM alpine:3.4
 MAINTAINER Sercan Degirmenci <sercan@otsimo.com>
 
-ADD ./bin/notification-linux-amd64 /notification/simple-notifications
-#ADD config.yml /notification/
+RUN apk add --update ca-certificates && rm -rf /var/cache/apk/*
 
-WORKDIR /notification
+ADD notification-linux-amd64 /opt/otsimo/simple-notifications
 
-#EXPOSE 18844
+EXPOSE 18844
 
-#CMD ["./simple-notifications","--config","config.yml"]
+CMD ["/opt/otsimo/simple-notifications"]

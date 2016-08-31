@@ -7,9 +7,9 @@ drivers:
   - type: email
     provider: sendgrid
     config:
-      apiKey: "SEND_GRID_API_KEY"
-      defaultFrom: "noreply@example.com"
-      defaultFromName: "Example.com"
+      apiKey: "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"
+      defaultFrom: "noreply@otsimo.com"
+      defaultFromName: "Otsimo"
   - type: push
     provider: onesignal
     config:

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	address = "localhost:18844"
+	address     = "localhost:18844"
 	defaultName = "world"
 )
 
@@ -27,13 +27,13 @@ func main() {
 	message := &pb.Message{
 		Event: "welcome",
 		//Language: "en",
+		DataJson: pb.Map2Str(map[string]interface{}{
+			"name":  "Sercan",
+			"count": 1}),
 		Targets: pb.NewTargets(
 			&pb.Email{
-				ToEmail:  []string{"degirmencisercan@gmail.com"},
-				Cc:       []string{"sercan@otsimo.com"},
-				DataJson: pb.Map2Str(map[string]interface{}{
-					"name":"Sercan",
-					"count":1, }),
+				ToEmail: []string{"degirmencisercan@gmail.com"},
+				Cc:      []string{"sercan@otsimo.com"},
 			},
 			&pb.Sms{
 				To: []string{"+21123124", "+123124"},
@@ -49,8 +49,8 @@ func main() {
 		log.Fatalf("could not send message: %v", err)
 	}
 
-	log.Printf("Result: %d\n%s\n%d", r.Type, r.Data, len(r.Results))
+	log.Printf("Result: %s\n%d", r.Output, len(r.Results))
 	for _, r2 := range r.Results {
-		log.Printf("[%s]='%s': %d-%s", r2.Target, r2.Driver, r2.Type, r2.Data)
+		log.Printf("[%s]: %s", r2.Driver, r2.Output)
 	}
 }

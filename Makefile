@@ -28,7 +28,7 @@ test:
 	script/test
 
 proto:
-	script/proto
+	sh notificationpb/proto.sh
 
 clean:
 	rm -rf bin

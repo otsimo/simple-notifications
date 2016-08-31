@@ -9,7 +9,6 @@ import (
 	_ "notification/drivers/mandrill"
 	_ "notification/drivers/onesignal"
 	_ "notification/drivers/pushwoosh"
-	_ "notification/drivers/sendgrid"
 	_ "notification/drivers/smtp"
 	_ "notification/drivers/twilio"
 	"os"
@@ -26,11 +25,11 @@ var RunConfig *notification.Config = notification.NewConfig()
 
 const (
 	EnvConfigName = "NOTIFICATION_CONFIG"
-	EnvDebugName  = "NOTIFICATION_DEBUG"
-	EnvPortName   = "NOTIFICATION_PORT"
+	EnvDebugName = "NOTIFICATION_DEBUG"
+	EnvPortName = "NOTIFICATION_PORT"
 )
 
-func RunAction(c *cli.Context) {
+func RunAction(c *cli.Context) error {
 	if c.Bool("debug") {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -66,9 +65,13 @@ func RunAction(c *cli.Context) {
 	}
 
 	server := notification.NewServer(RunConfig)
-	server.LoadDrivers()
-	server.LoadTemplates()
-	server.ListenAndServe()
+	if err := server.LoadDrivers(); err != nil {
+		return err
+	}
+	if err := server.LoadTemplates(); err != nil {
+		return err
+	}
+	return server.ListenAndServe()
 }
 
 func main() {
@@ -85,11 +88,13 @@ func main() {
 	}
 
 	app.Action = RunAction
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		panic(err)
+	}
 }
 
 func init() {
-	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, DisableColors: true})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 }

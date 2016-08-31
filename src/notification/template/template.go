@@ -2,27 +2,27 @@ package template
 
 import (
 	"bytes"
+	log "github.com/Sirupsen/logrus"
 	htmltemp "html/template"
+	"io/ioutil"
 	"path/filepath"
 	"strings"
 	texttemp "text/template"
-	"io/ioutil"
-	log "github.com/Sirupsen/logrus"
 )
 
 type TemplateType string
 
 const (
-	TemplateHtml         TemplateType = "html"
-	TemplateText         TemplateType = "txt"
+	TemplateHtml TemplateType = "html"
+	TemplateText TemplateType = "txt"
 	TemplateEmailSubject TemplateType = "sub"
-	TemplateSms          TemplateType = "sms"
-	TemplatePush         TemplateType = "push"
+	TemplateSms TemplateType = "sms"
+	TemplatePush TemplateType = "push"
 
 	TemplateLanguageNone string = ""
 )
 
-type Template struct {
+type tp struct {
 	Type     TemplateType
 	Language string
 	Path     string
@@ -34,10 +34,10 @@ type Template struct {
 type TemplateGroup struct {
 	Name      string
 	Path      string
-	Templates []*Template
+	Templates []*tp
 }
 
-func (t *TemplateGroup) Find(templateType TemplateType, language string) *Template {
+func (t *TemplateGroup) Find(templateType TemplateType, language string) *tp {
 	for _, temp := range t.Templates {
 		if temp.Type == templateType && temp.Language == language {
 			return temp
@@ -82,7 +82,7 @@ func getLanguage(fileName string) string {
 	return lang[1:]
 }
 
-func (t *TemplateGroup) Load(cache bool) {
+func (t *TemplateGroup) Load() {
 	fs, e := ioutil.ReadDir(t.Path)
 	if e != nil {
 		log.Errorf("template.go: Read sub-template directory '%s' error: %v", t.Path, e)
@@ -95,21 +95,19 @@ func (t *TemplateGroup) Load(cache bool) {
 			templateType := getTemplateType(name)
 			language := getLanguage(name)
 			log.Debugf("template.go: Template[%s],type='%s',lang='%s' adding to %s", name, templateType, language, t.Name)
-			temp := &Template{
+			temp := &tp{
 				Type:     templateType,
 				Language: language,
 				FullName: name,
 				Path:     filepath.Join(t.Path, name),
 			}
-			if cache {
-				temp.CacheText()
-			}
+
 			t.Templates = append(t.Templates, temp)
 		}
 	}
 }
 
-func SearchTemplates(root string, cache bool) map[string]*TemplateGroup {
+func SearchTemplates(root string) map[string]*TemplateGroup {
 	res := make(map[string]*TemplateGroup)
 	fs, e := ioutil.ReadDir(root)
 
@@ -122,43 +120,23 @@ func SearchTemplates(root string, cache bool) map[string]*TemplateGroup {
 			g := &TemplateGroup{
 				Name:      f.Name(),
 				Path:      filepath.Join(root, f.Name()),
-				Templates: make([]*Template, 0),
+				Templates: make([]*tp, 0),
 			}
 			res[g.Name] = g
-			g.Load(cache)
+			g.Load()
 		}
 	}
 
 	return res
 }
 
-func (t *Template) ReadText() ([]byte, error) {
+func (t *tp) ReadText() ([]byte, error) {
 	return ioutil.ReadFile(t.Path)
 }
 
-func (t *Template) CacheText() error {
-	data, err := t.ReadText()
-	if err != nil {
-		return err
-	}
-	if t.Type == TemplateHtml {
-		t.html, err = htmltemp.New(t.FullName).Parse(string(data))
-	} else {
-		t.text, err = texttemp.New(t.FullName).Parse(string(data))
-	}
-	return err
-}
-
-func (t *Template) PrintText(data interface{}) (*bytes.Buffer, error) {
+func (t *tp) PrintText(data interface{}) (*bytes.Buffer, error) {
 	var doc bytes.Buffer
 	var err error
-
-	if t.html == nil && t.text == nil {
-		err := t.CacheText()
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	if t.Type == TemplateHtml {
 		err = t.html.Execute(&doc, data)

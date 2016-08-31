@@ -23,13 +23,8 @@ func init() {
 }
 
 func main() {
-	defer func() {
-		if v := recover(); v != nil {
-			airbrake.Notify(v, nil)
-			panic(v)
-		}
-	}()
-	defer airbrake.Flush()
+	defer airbrake.Close()
+	defer airbrake.NotifyOnPanic()
 
 	airbrake.Notify(errors.New("operation failed"), nil)
 }
@@ -46,3 +41,7 @@ airbrake.AddFilter(func(notice *gobrake.Notice) *gobrake.Notice {
 	return notice
 })
 ```
+
+## Logging
+
+You can use [glog fork](https://github.com/airbrake/glog) to send your logs to Airbrake.

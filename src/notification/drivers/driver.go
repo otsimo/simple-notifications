@@ -2,23 +2,27 @@ package drivers
 
 import (
 	"fmt"
+	"notification/template"
+	"notificationpb"
+	"golang.org/x/net/context"
 )
 
 type Driver interface {
 	Name() string
-	Type() string
-	Send(data EventData) error
+	Type() NotificationType
+	Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan<- error)
 }
+type NotificationType string
 
 const (
-	TypeEmail     string = "email"
-	TypeSms       string = "sms"
-	TypePush      string = "push"
-	TypeScheduler string = "scheduler"
+	TypeEmail   NotificationType = "email"
+	TypeSms     NotificationType = "sms"
+	TypePush    NotificationType = "push"
+	TypeUnknown NotificationType = ""
 )
 
 type RegisteredDriver struct {
-	Type string
+	Type NotificationType
 	New  func(map[string]interface{}) (Driver, error)
 }
 
@@ -36,8 +40,8 @@ func Register(name string, rd *RegisteredDriver) error {
 	return nil
 }
 
-func GetDrivers() map[string]string {
-	drives := make(map[string]string, 0)
+func GetDrivers() map[string]NotificationType {
+	drives := make(map[string]NotificationType, 0)
 
 	for name, d := range drivers {
 		drives[name] = d.Type

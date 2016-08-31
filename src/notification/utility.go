@@ -5,7 +5,7 @@ import (
 	pb "notificationpb"
 )
 
-func getTargetType(t *pb.Target) string {
+func getTargetType(t *pb.Target) drivers.NotificationType {
 	switch t.GetBackend().(type) {
 	case *pb.Target_Email:
 		return drivers.TypeEmail
@@ -14,6 +14,6 @@ func getTargetType(t *pb.Target) string {
 	case *pb.Target_Sms:
 		return drivers.TypeSms
 	default:
-		return ""
+		return drivers.TypeUnknown
 	}
 }

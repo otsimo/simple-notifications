@@ -1,21 +1,14 @@
-package template_test
+package template
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"notification/template"
-
 	log "github.com/Sirupsen/logrus"
 )
 
-func visit(path string, f os.FileInfo, err error) error {
-	fmt.Printf("Visited: %s\n", path)
-	return nil
-}
 
 func check(err error) {
 	if err != nil {
@@ -62,7 +55,7 @@ func TestSearchTemplates(t *testing.T) {
 
 	prepareTestDirectoryWithLanguage(root, templates)
 
-	l := template.SearchTemplates(root, false)
+	l := SearchTemplates(root)
 
 	for _, n := range templates {
 		temp := l[n]
@@ -72,11 +65,11 @@ func TestSearchTemplates(t *testing.T) {
 		if len(temp.Templates) != 2 {
 			t.Fatalf("templateGroup[%s] don't have 2 templates", n)
 		}
-		trsms := temp.Find(template.TemplateSms, "tr")
+		trsms := temp.Find(TemplateSms, "tr")
 		if trsms == nil {
 			t.Fatal("TR Sms template is nil")
 		}
-		ensms := temp.Find(template.TemplateSms, "en")
+		ensms := temp.Find(TemplateSms, "en")
 		if ensms == nil {
 			t.Fatal("EN Sms template is nil")
 		}
@@ -89,7 +82,7 @@ func TestSearchTemplatesWithoutLanguage(t *testing.T) {
 	templates := []string{"asd", "fgh"}
 	prepareTestDirectoryWithoutLanguage(root, templates)
 
-	l := template.SearchTemplates(root, false)
+	l := SearchTemplates(root)
 
 	for _, n := range templates {
 		temp := l[n]
@@ -100,11 +93,11 @@ func TestSearchTemplatesWithoutLanguage(t *testing.T) {
 			t.Fatalf("templateGroup[%s] don't have 2 templates", n)
 		}
 
-		sms := temp.Find(template.TemplateSms, template.TemplateLanguageNone)
+		sms := temp.Find(TemplateSms, TemplateLanguageNone)
 		if sms == nil {
 			t.Fatal("Sms template is nil")
 		}
-		push := temp.Find(template.TemplatePush, template.TemplateLanguageNone)
+		push := temp.Find(TemplatePush, TemplateLanguageNone)
 		if push == nil {
 			t.Fatal("Push template is nil")
 		}

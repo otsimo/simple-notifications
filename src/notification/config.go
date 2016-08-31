@@ -15,7 +15,6 @@ type DriverConfig struct {
 type Config struct {
 	Port            int            `json:"port" yaml:"port,omitempty"`
 	TemplatePath    string         `json:"templatePath" yaml:"templatePath"`
-	CacheAtStart    bool           `json:"cacheAtStart" yaml:"cacheAtStart"`
 	DefaultLanguage string         `json:"defaultLanguage,omitempty" yaml:"defaultLanguage,omitempty"`
 	Drivers         []DriverConfig `json:"drivers" yaml:"drivers"`
 }

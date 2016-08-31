@@ -45,7 +45,7 @@ func (d SendGridDriver) Name() string {
 	return SendGridDriverName
 }
 
-func (d SendGridDriver) Type() string {
+func (d SendGridDriver) Type() drivers.NotificationType {
 	return drivers.TypeEmail
 }
 
