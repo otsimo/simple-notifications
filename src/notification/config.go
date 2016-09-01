@@ -3,7 +3,8 @@ package notification
 import "fmt"
 
 const (
-	DefaultPort = 18844
+	DefaultGrpcPort   = 18844
+	DefaultHealthPort = 8080
 )
 
 type DriverConfig struct {
@@ -13,16 +14,20 @@ type DriverConfig struct {
 }
 
 type Config struct {
-	Port            int            `json:"port" yaml:"port,omitempty"`
+	GrpcPort        int            `json:"-" yaml:"-"`
+	HealthPort      int            `json:"-" yaml:"-"`
 	TemplatePath    string         `json:"templatePath" yaml:"templatePath"`
 	DefaultLanguage string         `json:"defaultLanguage,omitempty" yaml:"defaultLanguage,omitempty"`
 	Drivers         []DriverConfig `json:"drivers" yaml:"drivers"`
 }
 
 func (c *Config) GetPortString() string {
-	return fmt.Sprintf(":%d", c.Port)
+	return fmt.Sprintf(":%d", c.GrpcPort)
+}
+func (c *Config) GetHealthPortString() string {
+	return fmt.Sprintf(":%d", c.HealthPort)
 }
 
 func NewConfig() *Config {
-	return &Config{Port: DefaultPort}
+	return &Config{GrpcPort: DefaultGrpcPort, HealthPort: DefaultHealthPort}
 }

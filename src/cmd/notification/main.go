@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"notification"
 	_ "notification/drivers"
@@ -11,7 +13,6 @@ import (
 	_ "notification/drivers/twilio"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
@@ -22,9 +23,10 @@ var Version string
 var RunConfig *notification.Config = notification.NewConfig()
 
 const (
-	EnvConfigName = "NOTIFICATION_CONFIG"
-	EnvDebugName  = "NOTIFICATION_DEBUG"
-	EnvPortName   = "NOTIFICATION_PORT"
+	EnvConfigName     = "NOTIFICATION_CONFIG"
+	EnvDebugName      = "NOTIFICATION_DEBUG"
+	EnvPortName       = "NOTIFICATION_PORT"
+	EnvHealthPortName = "NOTIFICATION_HEALTH_PORT"
 )
 
 func RunAction(c *cli.Context) error {
@@ -36,31 +38,26 @@ func RunAction(c *cli.Context) error {
 
 	dat, err := ioutil.ReadFile(cnf)
 	if err != nil {
-		log.Fatalf("main.go: Config file '%s' read error: %v", cnf, err)
+		return fmt.Errorf("main.go: Config file '%s' read error: %v", cnf, err)
 	}
 
 	e := filepath.Ext(cnf)
-	if e == ".yml" || e == "yaml" {
+	if e == ".yml" || e == ".yaml" {
 		err = yaml.Unmarshal(dat, RunConfig)
 		if err != nil {
-			log.Fatalf("main.go: Error while unmarshal config file, error: %v", err)
+			return fmt.Errorf("main.go: Error while unmarshal config file, error: %v", err)
 		}
-	} else if e == "json" {
+	} else if e == ".json" {
 		err = json.Unmarshal(dat, RunConfig)
 		if err != nil {
-			log.Fatalf("main.go: Error while unmarshal config file, error: %v", err)
+			return fmt.Errorf("main.go: Error while unmarshal config file, error: %v", err)
 		}
 	} else {
-		log.Fatalln("main.go: Unknown config file format")
+		return errors.New("main.go: Unknown config file format")
 	}
 
-	envPort := os.Getenv(EnvPortName)
-
-	if len(envPort) > 0 {
-		if p, err := strconv.Atoi(envPort); err == nil {
-			RunConfig.Port = p
-		}
-	}
+	RunConfig.GrpcPort = c.Int("port")
+	RunConfig.HealthPort = c.Int("health-port")
 
 	server := notification.NewServer(RunConfig)
 	if err := server.LoadDrivers(); err != nil {
@@ -81,8 +78,9 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{Name: "config", Value: "config.yml", Usage: "config file path", EnvVar: EnvConfigName},
+		cli.IntFlag{Name: "port", Value: notification.DefaultGrpcPort, Usage: "grpc server port", EnvVar: EnvPortName},
+		cli.IntFlag{Name: "health-port", Value: notification.DefaultHealthPort, Usage: "health check port", EnvVar: EnvHealthPortName},
 		cli.BoolFlag{Name: "debug, d", Usage: "enable verbose log", EnvVar: EnvDebugName},
-		cli.IntFlag{Name: "port", Value: notification.DefaultPort, Usage: "grpc server port", EnvVar: EnvPortName},
 	}
 
 	app.Action = RunAction

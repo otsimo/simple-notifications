@@ -60,6 +60,12 @@
 			"path": "/protoc-gen-go/descriptor"
 		},
 		{
+			"importpath": "github.com/otsimo/health",
+			"repository": "https://github.com/otsimo/health",
+			"revision": "372d7c52472f7945e4e211b61e79d643153f84cb",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/sendgrid/rest",
 			"repository": "https://github.com/sendgrid/rest",
 			"revision": "d37acbf70185e33da36a233f4df95848b052427c",
