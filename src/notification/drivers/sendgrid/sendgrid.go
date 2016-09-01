@@ -4,8 +4,12 @@ import (
 	"notification/drivers"
 	"notification/template"
 
-	log "github.com/Sirupsen/logrus"
+	"encoding/json"
+	"errors"
 	sendgrid "github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"golang.org/x/net/context"
+	"notificationpb"
 )
 
 const SendGridDriverName = "sendgrid"
@@ -20,10 +24,13 @@ func init() {
 func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	d := &SendGridDriver{}
 
-	if config["apiUser"] != nil {
-		d.Client = sendgrid.NewSendGridClient(config["apiUser"].(string), config["apiKey"].(string))
+	if ak, ok := config["apiKey"]; ok {
+		d.ApiKey, ok = ak.(string)
+		if !ok {
+			return nil, errors.New("apiKey must be string")
+		}
 	} else {
-		d.Client = sendgrid.NewSendGridClientWithApiKey(config["apiKey"].(string))
+		return nil, errors.New("missing apiKey")
 	}
 
 	if sender := config["defaultFrom"]; sender != nil {
@@ -36,9 +43,9 @@ func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 }
 
 type SendGridDriver struct {
-	Client           *sendgrid.SGClient
 	DefaultFromEmail string
 	DefaultFromName  string
+	ApiKey           string
 }
 
 func (d SendGridDriver) Name() string {
@@ -49,50 +56,106 @@ func (d SendGridDriver) Type() drivers.NotificationType {
 	return drivers.TypeEmail
 }
 
-func (d *SendGridDriver) Send(data drivers.EventData) error {
-	m := data.Target.GetEmail()
-	md := data.GetEmailData()
-
-	message := sendgrid.NewMail()
-
-	if len(m.FromEmail) > 0 {
-		message.SetFrom(m.FromEmail)
+func templateString(data interface{}, customTemplate []byte, message *notificationpb.Message, man template.Manager, suffix string, html bool) (str string, set bool, err error) {
+	set = true
+	var temp template.Template
+	if len(customTemplate) > 0 {
+		temp, err = template.NewTemplate(string(customTemplate), html)
 	} else {
-		message.SetFrom(d.DefaultFromEmail)
+		if man.Exist(message.Event, message.Language, suffix) == nil {
+			temp, err = man.Template(message.Event, message.Language, suffix)
+		} else {
+			return "", false, nil
+		}
 	}
+	if err != nil {
+		return "", true, err
+	}
+	str, err = temp.String(data)
+	return
+}
 
-	message.AddTos(m.ToEmail)
-	message.AddCcs(m.Cc)
-	message.AddBccs(m.Bcc)
-	if len(m.ReplyTo) > 0 {
-		message.SetReplyTo(m.ReplyTo)
-	}
-	if len(m.ToName) > 0 {
-		message.AddToNames(m.ToName)
-	}
+func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan <- error) {
+	m := message.GetEmail()
+	email := new(mail.SGMailV3)
+	p := mail.NewPersonalization()
+	var fromName string
 	if len(m.FromName) > 0 {
-		message.SetFromName(m.FromName)
+		fromName = m.FromName
 	} else {
-		message.SetFromName(d.DefaultFromName)
+		fromName = d.DefaultFromName
 	}
-
-	if txt := data.GetHtml(md); len(txt) > 0 {
-		message.SetHTML(txt)
-	}
-
-	if txt := data.GetText(template.TemplateText, md); len(txt) > 0 {
-		message.SetText(txt)
-	}
-
-	if txt := data.GetText(template.TemplateEmailSubject, md); len(txt) > 0 {
-		message.SetSubject(txt)
+	if len(m.FromEmail) > 0 {
+		email.SetFrom(mail.NewEmail(fromName, m.FromEmail))
 	} else {
-		message.SetSubject(m.Subject)
+		email.SetFrom(mail.NewEmail(fromName, d.DefaultFromEmail))
 	}
-
-	r := d.Client.Send(message)
-	if r != nil {
-		log.Errorln(r)
+	addName := len(m.ToEmail) == len(m.ToName)
+	for i, e := range m.ToEmail {
+		if addName {
+			p.AddTos(mail.NewEmail(m.ToName[i], e))
+		} else {
+			p.AddTos(mail.NewEmail("", e))
+		}
 	}
-	return r
+	for _, e := range m.Cc {
+		p.AddCCs(mail.NewEmail("", e))
+	}
+	for _, e := range m.Bcc {
+		p.AddBCCs(mail.NewEmail("", e))
+	}
+	if len(m.ReplyTo) > 0 {
+		email.SetReplyTo(mail.NewEmail("", m.ReplyTo))
+	}
+	data := make(map[string]interface{})
+	if len(message.DataJson) > 0 {
+		if err := json.Unmarshal(message.DataJson, &data); err != nil {
+			ch <- err
+			return
+		}
+	}
+	for k, v := range message.Tags {
+		if _, ok := data[k]; !ok {
+			data[k] = v
+		}
+	}
+	var err error
+	email.Subject, _, err = templateString(data, m.TemplateSub, message, man, "sub", false)
+	if err != nil {
+		ch <- err
+		return
+	}
+	var html string
+	var set bool
+	html, set, err = templateString(data, m.TemplateHtml, message, man, "html", true)
+	if set {
+		if err != nil {
+			ch <- err
+			return
+		}
+		email.AddContent(mail.NewContent("text/html", html))
+	}
+	var text string
+	text, set, err = templateString(data, m.TemplateTxt, message, man, "txt", false)
+	if set {
+		if err != nil {
+			ch <- err
+			return
+		}
+		email.AddContent(mail.NewContent("text/plain", text))
+	}
+	if message.ScheduleAt > 0 {
+		email.SendAt = int(message.ScheduleAt)
+	}
+	email.AddPersonalizations(p)
+	request := sendgrid.GetRequest(d.ApiKey, "/v3/mail/send", "https://api.sendgrid.com")
+	request.Method = "POST"
+	request.Body = mail.GetRequestBody(email)
+	select {
+	case <-ctx.Done():
+		ch <- ctx.Err()
+	default:
+		_, err := sendgrid.API(request)
+		ch <- err
+	}
 }

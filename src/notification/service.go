@@ -7,11 +7,10 @@ import (
 )
 
 func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.SendMessageResponse, error) {
-	log.Infof("server.go: SendMessage with event='%s' and language='%s' to #%d target(s)", in.Event, in.Language, len(in.Targets))
-
+	log.Debugf("server.go: SendMessage with event='%s' and language='%s' to #%d target(s)", in.Event, in.Language, len(in.Targets))
 	results := make([]*pb.MessageTargetResponse, 0)
-
 	ch := make(chan error, 1)
+
 	for _, t := range in.Targets {
 		ty := getTargetType(t)
 		if driver, ok := server.Drivers[ty]; ok {

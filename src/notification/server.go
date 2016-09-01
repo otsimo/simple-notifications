@@ -16,10 +16,6 @@ type Server struct {
 	man     template.Manager
 }
 
-func (server *Server) addDriver(dr drivers.Driver) {
-	server.Drivers[dr.Type()] = dr
-}
-
 func (server *Server) LoadDrivers() error {
 	log.Debugf("server.go: Config is %v", server.Config)
 	for _, r := range server.Config.Drivers {
@@ -31,7 +27,7 @@ func (server *Server) LoadDrivers() error {
 				} else if dr == nil {
 					return fmt.Errorf("failed to create %s driver, it is created as nil", r.Provider)
 				} else {
-					server.addDriver(dr)
+					server.Drivers[dr.Type()] = dr
 				}
 			} else {
 				return fmt.Errorf("server.go: %s named driver is \"%s\" driver in config, but it is actually a \"%s\" driver", r.Provider, r.Type, driver.Type)
