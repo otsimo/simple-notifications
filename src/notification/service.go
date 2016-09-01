@@ -3,15 +3,18 @@ package notification
 import (
 	"errors"
 	"fmt"
+	"notification/drivers"
+	pb "notificationpb"
+	"pipelinepb"
+	"strings"
+
+	"encoding/json"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/jsonpb"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"notification/drivers"
-	pb "notificationpb"
-	"pipelinepb"
-	"strings"
 )
 
 const (
@@ -87,6 +90,14 @@ func (server *Server) Single(ctx context.Context, in *pipelinepb.FlowIn) (*pipel
 			return nil, err
 		}
 		mes.DataJson = in.Payload
+		tt := struct {
+			ScheduleAt int64 `json:"scheduleAt"`
+		}{}
+		if err := json.Unmarshal(in.Payload, &tt); err == nil {
+			if tt.ScheduleAt > 0 {
+				mes.ScheduleAt = tt.ScheduleAt
+			}
+		}
 	default:
 		return nil, grpc.Errorf(codes.InvalidArgument, "unknown action %s", in.Action)
 	}

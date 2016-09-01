@@ -9,11 +9,12 @@ import (
 
 	"net/http"
 
+	"pipelinepb"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/otsimo/health"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
-	"pipelinepb"
 )
 
 type Server struct {

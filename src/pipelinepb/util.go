@@ -3,10 +3,11 @@ package pipelinepb
 import (
 	"bytes"
 
+	"log"
+
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/otsimo/otsimopb"
-	"log"
 )
 
 var (
