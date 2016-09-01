@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 )
 

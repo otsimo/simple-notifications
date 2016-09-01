@@ -5,6 +5,8 @@ import (
 
 	pb "notificationpb"
 
+	"time"
+
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -23,10 +25,13 @@ func main() {
 	}
 	defer conn.Close()
 	c := pb.NewNotificationServiceClient(conn)
-
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+	sr, _ := c.Scan(context.Background(), &pb.ScanRequest{})
+	log.Printf("Scan %v:", sr.Events)
 	message := &pb.Message{
-		Event: "welcome",
-		//Language: "en",
+		Event:    "welcome",
+		Language: "en",
+		Tags:     map[string]string{"user_id": "b5980760-dc0b-4ed9-9aa5-489c85c5fa5e"},
 		DataJson: pb.Map2Str(map[string]interface{}{
 			"name":  "Sercan",
 			"count": 1}),
@@ -35,22 +40,16 @@ func main() {
 				ToEmail: []string{"degirmencisercan@gmail.com"},
 				Cc:      []string{"sercan@otsimo.com"},
 			},
-			&pb.Sms{
-				To: []string{"+21123124", "+123124"},
-			},
 			&pb.Push{
-				To: []string{"asdaf78a6sfa6f5asf", "j1g24feqfwd7as6d6t7asf"},
-			}),
+				Template: []byte(`Selam fella`),
+			}, &pb.Sms{}),
 	}
-
-	r, err := c.SendMessage(context.Background(), message)
-
+	r, err := c.SendMessage(ctx, message)
 	if err != nil {
 		log.Fatalf("could not send message: %v", err)
 	}
-
 	log.Printf("Result: %s\n%d", r.Output, len(r.Results))
 	for _, r2 := range r.Results {
-		log.Printf("[%s]: %s", r2.Driver, r2.Output)
+		log.Printf("[%s]: %s", r2.Target, r2.Output)
 	}
 }

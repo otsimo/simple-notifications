@@ -1,15 +1,17 @@
 package sendgrid
 
 import (
-	"notification/drivers"
-	"notification/template"
-
 	"encoding/json"
 	"errors"
+	"fmt"
+	"notification/drivers"
+	"notification/template"
+	"notificationpb"
+
+	"github.com/Sirupsen/logrus"
 	sendgrid "github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"golang.org/x/net/context"
-	"notificationpb"
 )
 
 const SendGridDriverName = "sendgrid"
@@ -39,6 +41,7 @@ func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	if sender := config["defaultFromName"]; sender != nil {
 		d.DefaultFromName = sender.(string)
 	}
+	logrus.WithField("driver", SendGridDriverName).Errorf("initialized")
 	return d, nil
 }
 
@@ -75,7 +78,7 @@ func templateString(data interface{}, customTemplate []byte, message *notificati
 	return
 }
 
-func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan <- error) {
+func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan<- drivers.DriverResult) {
 	m := message.GetEmail()
 	email := new(mail.SGMailV3)
 	p := mail.NewPersonalization()
@@ -110,7 +113,7 @@ func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Messa
 	data := make(map[string]interface{})
 	if len(message.DataJson) > 0 {
 		if err := json.Unmarshal(message.DataJson, &data); err != nil {
-			ch <- err
+			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: err}
 			return
 		}
 	}
@@ -122,27 +125,27 @@ func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Messa
 	var err error
 	email.Subject, _, err = templateString(data, m.TemplateSub, message, man, "sub", false)
 	if err != nil {
-		ch <- err
+		ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: errors.New("failed to create subject text")}
 		return
 	}
 	var html string
 	var set bool
-	html, set, err = templateString(data, m.TemplateHtml, message, man, "html", true)
-	if set {
-		if err != nil {
-			ch <- err
-			return
-		}
-		email.AddContent(mail.NewContent("text/html", html))
-	}
 	var text string
 	text, set, err = templateString(data, m.TemplateTxt, message, man, "txt", false)
 	if set {
 		if err != nil {
-			ch <- err
+			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: errors.New("failed to create text content")}
 			return
 		}
 		email.AddContent(mail.NewContent("text/plain", text))
+	}
+	html, set, err = templateString(data, m.TemplateHtml, message, man, "html", true)
+	if set {
+		if err != nil {
+			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: errors.New("failed to create html content")}
+			return
+		}
+		email.AddContent(mail.NewContent("text/html", html))
 	}
 	if message.ScheduleAt > 0 {
 		email.SendAt = int(message.ScheduleAt)
@@ -153,9 +156,17 @@ func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Messa
 	request.Body = mail.GetRequestBody(email)
 	select {
 	case <-ctx.Done():
-		ch <- ctx.Err()
+		ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: ctx.Err()}
 	default:
-		_, err := sendgrid.API(request)
-		ch <- err
+		r, err := sendgrid.API(request)
+		if err != nil {
+			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: err}
+			return
+		}
+		if r.StatusCode >= 300 {
+			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: fmt.Errorf(r.Body)}
+		} else {
+			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: nil}
+		}
 	}
 }

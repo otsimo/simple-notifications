@@ -3,15 +3,15 @@ package onesignal
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"golang.org/x/net/context"
 	"net/http"
-	"net/http/httptest"
 	"notification/drivers"
 	"notification/template"
 	"notificationpb"
 	"time"
+
+	"github.com/Sirupsen/logrus"
+	"golang.org/x/net/context"
 )
 
 const DriverName = "onesignal"
@@ -31,6 +31,7 @@ func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	if a, ok := config["authorization"]; ok {
 		d.authorization = a.(string)
 	}
+	logrus.WithField("driver", DriverName).Errorf("initialized")
 	return d, nil
 }
 
@@ -106,36 +107,46 @@ func putContent(n *notification, message *notificationpb.Message, man template.M
 	if len(p.Template) > 0 {
 		cts := make(map[string]string)
 		if err := json.Unmarshal(p.Template, &cts); err != nil {
-
-		}
-	} else {
-		for _, l := range langs {
-			t, err := man.Template(message.Event, l, "push")
-			if err != nil {
-				return err
+			if len(langs) == 0 {
+				n.Contents["en"] = string(p.Template)
+				n.Contents[message.Language] = string(p.Template)
+				return nil
 			}
-			s, err := t.String(data)
-			if err != nil {
-				return err
+		} else {
+			for k, v := range cts {
+				n.Contents[k] = v
 			}
-			n.Contents[l] = s
-		}
-		for _, l := range man.Languages(message.Event, "push.tt") {
-			t, err := man.Template(message.Event, l, "push.tt")
-			if err != nil {
-				return err
-			}
-			s, err := t.String(data)
-			if err != nil {
-				return err
-			}
-			n.Headings[l] = s
+			return nil
 		}
 	}
+
+	for _, l := range langs {
+		t, err := man.Template(message.Event, l, "push")
+		if err != nil {
+			return err
+		}
+		s, err := t.String(data)
+		if err != nil {
+			return err
+		}
+		n.Contents[l] = s
+	}
+	for _, l := range man.Languages(message.Event, "push.tt") {
+		t, err := man.Template(message.Event, l, "push.tt")
+		if err != nil {
+			return err
+		}
+		s, err := t.String(data)
+		if err != nil {
+			return err
+		}
+		n.Headings[l] = s
+	}
+
 	return nil
 }
 
-func (o *oneSignalDrv) Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan<- error) {
+func (o *oneSignalDrv) Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan<- drivers.DriverResult) {
 	p := message.GetPush()
 	m := o.notification()
 	if uid, ok := message.Tags["user_id"]; ok {
@@ -151,26 +162,36 @@ func (o *oneSignalDrv) Send(ctx context.Context, message *notificationpb.Message
 		m.SendAfter = time.Unix(message.ScheduleAt, 0).UTC().String()
 	}
 	if err := putContent(&m, message, man); err != nil {
-		ch <- err
+		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: err}
 		return
 	}
 
 	var out bytes.Buffer
 	if err := json.NewEncoder(&out).Encode(&m); err != nil {
-		ch <- err
+		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: fmt.Errorf("encode message json error, %v", err)}
 		return
 	}
-	req := httptest.NewRequest("POST", "https://onesignal.com/api/v1/notifications", &out)
+	req, err := http.NewRequest("POST", "https://onesignal.com/api/v1/notifications", &out)
+	if err != nil {
+		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: err}
+		return
+	}
 	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", o.authorization))
+	req.Header.Set("Content-Type", "application/json")
+	select {
+	case <-ctx.Done():
+		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: ctx.Err()}
+		return
+	default:
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		ch <- err
+		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: err}
 		return
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		ch <- errors.New("non ok status code")
+		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: fmt.Errorf("status code: %d", resp.StatusCode)}
 		return
 	}
-	ch <- nil
+	ch <- drivers.DriverResult{Type: drivers.TypePush, Err: nil}
 }

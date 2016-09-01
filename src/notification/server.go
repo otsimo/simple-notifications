@@ -2,12 +2,13 @@ package notification
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"google.golang.org/grpc"
 	"net"
 	"notification/drivers"
 	"notification/template"
 	pb "notificationpb"
+
+	log "github.com/Sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type Server struct {

@@ -1,18 +1,17 @@
 package template
 
 import (
-	"bytes"
 	"errors"
 	htmlTemplate "html/template"
-	"io"
 	"io/ioutil"
+	"notificationpb"
 	"path/filepath"
 	"strings"
 	textTemplate "text/template"
 )
 
 var (
-	NotFoundError error = errors.New("not found")
+	NotFoundError      error = errors.New("not found")
 	EventNotExistError error = errors.New("event not exist")
 )
 
@@ -109,77 +108,58 @@ func (m *manager) Template(event, lang, suffix string) (Template, error) {
 	}
 }
 
-type Template interface {
-	Info() (event string, lang string)
-	Render(data interface{}, w io.Writer) error
-	String(data interface{}) (string, error)
-}
-
-type Manager interface {
-	Exist(event, lang, suffix string) error
-	Languages(event, suffix string) []string
-	Template(event, lang, suffix string) (Template, error)
+func (m *manager) Scan() ([]*notificationpb.Event, error) {
+	res := make([]*notificationpb.Event, 0)
+	fs, err := ioutil.ReadDir(m.dir)
+	if err != nil {
+		return res, err
+	}
+	for _, f := range fs {
+		if !f.IsDir() {
+			continue
+		}
+		edir := filepath.Join(m.dir, f.Name())
+		ef, err := ioutil.ReadDir(edir)
+		if err != nil {
+			continue
+		}
+		event := &notificationpb.Event{
+			Name:      f.Name(),
+			Templates: make([]*notificationpb.Event_Template, 0),
+		}
+		ts := map[string][]string{}
+		for _, ef := range ef {
+			if ef.IsDir() {
+				continue
+			}
+			n := ef.Name()
+			names := strings.Split(n, ".")
+			lindex := 1
+			sindex := 2
+			if len(names) == 2 {
+				lindex = 0
+				sindex = 1
+			} else if len(names) < 2 {
+				continue
+			}
+			lang := names[lindex]
+			suf := names[sindex]
+			if _, ok := ts[suf]; !ok {
+				ts[suf] = []string{}
+			}
+			ts[suf] = append(ts[suf], lang)
+		}
+		for s, l := range ts {
+			event.Templates = append(event.Templates, &notificationpb.Event_Template{
+				Suffix:    s,
+				Languages: l,
+			})
+		}
+		res = append(res, event)
+	}
+	return res, nil
 }
 
 func New(templatesDir, defaultLang string) (Manager, error) {
 	return &manager{dir: templatesDir, defaultLang: defaultLang}, nil
-}
-
-type txtTemplate struct {
-	t     *textTemplate.Template
-	event string
-	lang  string
-}
-
-func (t *txtTemplate) Render(data interface{}, w io.Writer) error {
-	return t.t.Execute(w, data)
-}
-
-func (t *txtTemplate) String(data interface{}) (string, error) {
-	var b bytes.Buffer
-	if err := t.t.Execute(&b, data); err != nil {
-		return "", err
-	}
-	return b.String(), nil
-}
-func (t *txtTemplate) Info() (string, string) {
-	return t.event, t.lang
-}
-
-type hTemplate struct {
-	t     *htmlTemplate.Template
-	event string
-	lang  string
-}
-
-func (t *hTemplate) Render(data interface{}, w io.Writer) error {
-	return t.t.Execute(w, data)
-}
-
-func (t *hTemplate) String(data interface{}) (string, error) {
-	var b bytes.Buffer
-	if err := t.t.Execute(&b, data); err != nil {
-		return "", err
-	}
-	return b.String(), nil
-}
-
-func (t *hTemplate) Info() (string, string) {
-	return t.event, t.lang
-}
-
-func NewTemplate(str string, isHtml bool) (Template, error) {
-	if isHtml {
-		t, err := htmlTemplate.New("").Parse(str)
-		if err != nil {
-			return nil, err
-		}
-		return &hTemplate{t: t}, nil
-	} else {
-		t, err := textTemplate.New("").Parse(str)
-		if err != nil {
-			return nil, err
-		}
-		return &txtTemplate{t: t}, nil
-	}
 }

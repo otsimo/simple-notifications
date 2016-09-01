@@ -58,7 +58,7 @@ message Message {
 }
 
 message MessageTargetResponse {
-    string driver = 1;
+    string target = 1;
     string output = 2;
 }
 
@@ -67,6 +67,23 @@ message SendMessageResponse {
     repeated MessageTargetResponse results = 2;
 }
 
+message Event {
+    message Template {
+        repeated string languages = 1;
+        string suffix = 2;
+    }
+    string name = 1;
+    repeated Template templates = 2;
+}
+
+message ScanRequest {
+}
+
+message ScanResponse {
+    repeated Event events = 1;
+}
+
 service NotificationService {
     rpc SendMessage (Message) returns (SendMessageResponse);
+    rpc Scan (ScanRequest) returns (ScanResponse);
 }

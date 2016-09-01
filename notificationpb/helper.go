@@ -3,31 +3,8 @@ package notificationpb
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
-
-func NewEmailTarget(email *Email) *Target {
-	return &Target{
-		Backend: &Target_Email{
-			Email: email,
-		},
-	}
-}
-
-func NewSmsTarget(sms *Sms) *Target {
-	return &Target{
-		Backend: &Target_Sms{
-			Sms: sms,
-		},
-	}
-}
-
-func NewPushTarget(push *Push) *Target {
-	return &Target{
-		Backend: &Target_Push{
-			Push: push,
-		},
-	}
-}
 
 func NewTargets(targets ...interface{}) []*Target {
 	r := make([]*Target, 0)
@@ -58,25 +35,29 @@ func NewTargets(targets ...interface{}) []*Target {
 	return r
 }
 
-func NewMessageTargetResponse(resultType int32, driver string) *MessageTargetResponse {
+func NewMessageTargetResponse(resultType int32, target string) *MessageTargetResponse {
 	return &MessageTargetResponse{
 		Output: errorMessages[resultType],
-		Driver: driver,
+		Target: target,
 	}
 }
 
-func NewMessageResponse(resultType int32, results []*MessageTargetResponse) *SendMessageResponse {
-	return &SendMessageResponse{
-		Output:  errorMessages[resultType],
+func NewMessageResponse(results []*MessageTargetResponse) *SendMessageResponse {
+	resp := &SendMessageResponse{
 		Results: results,
 	}
-}
-
-func NewCustomMessageResponse(output string, results []*MessageTargetResponse) *SendMessageResponse {
-	return &SendMessageResponse{
-		Output:  output,
-		Results: results,
+	failed := []string{}
+	for _, r := range results {
+		if r.Output != "Success" {
+			failed = append(failed, r.Target)
+		}
 	}
+	if len(failed) > 0 {
+		resp.Output = fmt.Sprintf("Following targets are failed: %s", strings.Join(failed, " ,"))
+	} else {
+		resp.Output = "Success"
+	}
+	return resp
 }
 
 func Map2Str(data map[string]interface{}) []byte {

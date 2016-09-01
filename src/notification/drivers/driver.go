@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"notification/template"
 	"notificationpb"
+
 	"golang.org/x/net/context"
 )
+
+type DriverResult struct {
+	Type NotificationType
+	Err  error
+}
 
 type Driver interface {
 	Name() string
 	Type() NotificationType
-	Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan<- error)
+	Send(ctx context.Context, message *notificationpb.Message, man template.Manager, ch chan<- DriverResult)
 }
 type NotificationType string
 

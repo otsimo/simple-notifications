@@ -6,8 +6,8 @@ import (
 	"notification"
 	_ "notification/drivers"
 	_ "notification/drivers/onesignal"
-	_ "notification/drivers/smtp"
 	_ "notification/drivers/sendgrid"
+	_ "notification/drivers/smtp"
 	_ "notification/drivers/twilio"
 	"os"
 	"path/filepath"
@@ -23,8 +23,8 @@ var RunConfig *notification.Config = notification.NewConfig()
 
 const (
 	EnvConfigName = "NOTIFICATION_CONFIG"
-	EnvDebugName = "NOTIFICATION_DEBUG"
-	EnvPortName = "NOTIFICATION_PORT"
+	EnvDebugName  = "NOTIFICATION_DEBUG"
+	EnvPortName   = "NOTIFICATION_PORT"
 )
 
 func RunAction(c *cli.Context) error {
