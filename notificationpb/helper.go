@@ -35,13 +35,6 @@ func NewTargets(targets ...interface{}) []*Target {
 	return r
 }
 
-func NewMessageTargetResponse(resultType int32, target string) *MessageTargetResponse {
-	return &MessageTargetResponse{
-		Output: errorMessages[resultType],
-		Target: target,
-	}
-}
-
 func NewMessageResponse(results []*MessageTargetResponse) *SendMessageResponse {
 	resp := &SendMessageResponse{
 		Results: results,
