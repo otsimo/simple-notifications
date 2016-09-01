@@ -13,6 +13,7 @@ import (
 	"github.com/otsimo/health"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"pipelinepb"
 )
 
 type Server struct {
@@ -64,10 +65,10 @@ func (server *Server) ListenAndServe() error {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterNotificationServiceServer(grpcServer, server)
+	pipelinepb.RegisterPodServer(grpcServer, server)
 	hs := health.New(server)
 	grpc_health_v1.RegisterHealthServer(grpcServer, hs)
 	go http.ListenAndServe(server.Config.GetHealthPortString(), hs)
-
 	log.Infoln("server.go: Listening", port)
 	//Serve
 	return grpcServer.Serve(lis)

@@ -1,0 +1,61 @@
+syntax = "proto3";
+package otsimo;
+
+import "dashboard.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "otsimopb";
+option java_multiple_files = true;
+option java_package = "com.otsimo.grpc";
+
+message ProviderGetRequest{
+    DashboardGetRequest request = 1;
+    repeated string user_groups = 2;
+}
+
+// DashboardProvider
+service DashboardProvider {
+    rpc Info(ProviderInfoRequest) returns (ProviderInfo);
+    rpc Get(ProviderGetRequest) returns (ProviderItems);
+}
+
+message ProviderItem{
+    bool cacheable = 1;
+    int64 ttl = 2;
+    Card item = 4;
+}
+
+message ProviderItems {
+    //ProfileId
+    string profile_id = 1;
+    //ChildId
+    string child_id = 2;
+    //CreatedAt
+    int64 created_at = 3;
+    //Cacheable
+    bool cacheable = 4;
+    //TTL is titme to live duration
+    int64 ttl = 5;
+    //Items
+    repeated ProviderItem items = 8;
+}
+
+message ProviderInfoRequest{
+    //todo
+}
+
+message ProviderInfo{
+    repeated string serves_for = 1;
+}
+
+
+
+
+
+

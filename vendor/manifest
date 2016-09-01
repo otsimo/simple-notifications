@@ -46,6 +46,13 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/golang/protobuf/jsonpb",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
+			"branch": "master",
+			"path": "/jsonpb"
+		},
+		{
 			"importpath": "github.com/golang/protobuf/proto",
 			"repository": "https://github.com/golang/protobuf",
 			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
@@ -60,9 +67,50 @@
 			"path": "/protoc-gen-go/descriptor"
 		},
 		{
+			"importpath": "github.com/golang/protobuf/ptypes/any",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
+			"branch": "master",
+			"path": "/ptypes/any"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/ptypes/duration",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
+			"branch": "master",
+			"path": "/ptypes/duration"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/ptypes/struct",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
+			"branch": "master",
+			"path": "/ptypes/struct"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/ptypes/timestamp",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
+			"branch": "master",
+			"path": "/ptypes/timestamp"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/ptypes/wrappers",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a",
+			"branch": "master",
+			"path": "/ptypes/wrappers"
+		},
+		{
 			"importpath": "github.com/otsimo/health",
 			"repository": "https://github.com/otsimo/health",
 			"revision": "372d7c52472f7945e4e211b61e79d643153f84cb",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/otsimo/otsimopb",
+			"repository": "https://github.com/otsimo/otsimopb",
+			"revision": "ff1162448f8e377201ae9cff610f77ee94c9618a",
 			"branch": "master"
 		},
 		{

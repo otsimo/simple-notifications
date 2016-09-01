@@ -1,0 +1,111 @@
+syntax = "proto3";
+package otsimo;
+
+import "datasetmodels.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+// DashboardService
+service DashboardService {
+    rpc Get(DashboardGetRequest) returns (DashboardItems);
+    rpc GetStream(DashboardGetRequest) returns (stream Card);
+}
+
+message DashboardItems {
+    //ProfileId
+    string profile_id = 1;
+    //ChildId
+    string child_id = 2;
+    //Created At
+    int64 created_at = 3;
+    repeated Card items = 8;
+}
+
+message DashboardGetRequest {
+    string profile_id = 1;
+    string child_id = 2;
+    string app_version = 3;
+    string language = 4;
+    string country_code = 5;
+    int64 last_time_data_fetched = 6;
+} 
+
+message CardDecoration { 
+    enum Size {
+        //Small is 1x1 block on iphone
+        SMALL = 0;
+        //Medium is 2x1 block on iphone
+        MEDIUM = 1;
+        //Large is 2x2 block on iphone
+        LARGE = 2;
+    }
+    
+    enum BackgroundStyle {
+        EMPTY = 0;
+        IMAGE = 1;
+        CHART_SILHOUETTE = 2;
+    }
+    
+    Size size = 1;
+    BackgroundStyle background_style = 2;
+    string image_url = 3;
+    string left_icon = 4;
+    string right_icon = 5;
+}
+
+message CardEmpty{    
+}
+
+message CardWebpage{
+    string url = 1;
+}
+
+message CardApplink{
+    string applink = 1;
+}
+
+message CardAnalysis{
+    apipb.DataSet data = 1;
+    ChartType chart_type = 2;
+}
+
+message Card {
+    string id = 1;
+    string text = 2;
+    int64 expires_at = 3;    
+    int64 created_at = 4;
+    CardDecoration decoration = 5;
+    //Score is between 0-500
+    int32 provider_score = 6;
+    //ProviderWeight is between 0-2
+    float provider_weight = 7;
+    string provider_name = 8;
+    string language = 9;
+    
+    oneof data{
+        CardEmpty empty = 10;
+        CardWebpage webpage = 11;
+        CardApplink applink = 12;
+        CardAnalysis analysis = 13;
+    }
+}
+
+enum ChartType {
+    LINE = 0;
+    BAR = 1;
+    PIE = 2;
+    SCATTER = 3;
+    BUBLE = 4;
+    RADAR = 5;
+    GEO = 6;
+    TIMELINE = 7;
+}

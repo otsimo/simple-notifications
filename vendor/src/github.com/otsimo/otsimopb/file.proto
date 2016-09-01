@@ -1,0 +1,45 @@
+syntax = "proto3";
+package otsimo;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = true;
+//option (gogoproto.goproto_enum_prefix_all) = false;
+
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+option java_outer_classname= "FileProto";
+
+service File {
+    rpc StoreSmall(StoreRequest) returns (StoreResponse);
+    rpc RequestStoreBig(UploadRequest) returns (UploadResponse);
+    rpc Lookup(LookupRequest) returns (LookupResponse);
+}
+
+message FileMetadata{
+}
+
+message UploadRequest{
+    FileMetadata metadata = 1;
+    bytes data = 2;
+}
+
+message UploadResponse{
+}
+
+message StoreRequest{
+}
+
+message StoreResponse{
+}
+
+message LookupRequest{
+}
+
+message LookupResponse{
+}

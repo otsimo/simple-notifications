@@ -1,0 +1,61 @@
+syntax = "proto3";
+package apipb;
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "content.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+message OtsimoServices{
+    string environment = 1;
+    string issuer = 2;
+    bool is_production = 3;
+    bool use_tls = 4;
+    
+    string registry_grpc = 5;
+    string listener_grpc = 6;
+    string watch_grpc = 7;
+    string catalog_grpc = 8;
+    string content_grpc = 9;
+    string dashboard_grpc = 10;
+    string api_grpc = 11;
+    //GameContent is registry service http url
+    string game_content = 12;
+    string accounts = 13;
+    string analytics_grpc = 14;
+    
+    map<string,string> services = 20;
+    map<string,string> game_storage_providers = 21;
+    map<string,SelfLearningConfig> self_learning_configs = 22;
+    map<string,string> configs = 23;
+}
+
+message DiscoveryRequest {
+    string environment = 1;
+    string sdk_version = 2;
+    string os_name = 3;
+    string country_code = 4;
+    string app_bundle_id = 5;
+    string app_bundle_version = 6;
+}
+
+message SelfLearningSegment{
+    string title = 1;
+    ContentListRequest base_query = 2;
+}
+
+message SelfLearningConfig{
+    string language = 1;
+    repeated SelfLearningSegment segments = 2;
+}
+
+service Discovery{
+    rpc Get(DiscoveryRequest) returns(OtsimoServices);
+}

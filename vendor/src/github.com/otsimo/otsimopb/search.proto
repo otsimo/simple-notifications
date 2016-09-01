@@ -1,0 +1,23 @@
+syntax = "proto3";
+package apipb;
+
+import "messages.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option objc_class_prefix = "OTS";
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+// Search Service
+service SearchService{
+    rpc IndexDatabase(IndexRequest) returns (Response){}
+    rpc ReindexAll(IndexRequest) returns (Response){}
+    rpc Search(SearchRequest) returns (SearchResponse){}
+}

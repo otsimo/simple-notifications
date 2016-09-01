@@ -104,22 +104,6 @@ func putContent(n *notification, message *notificationpb.Message, man template.M
 			data[k] = v
 		}
 	}
-	if len(p.Template) > 0 {
-		cts := make(map[string]string)
-		if err := json.Unmarshal(p.Template, &cts); err != nil {
-			if len(langs) == 0 {
-				n.Contents["en"] = string(p.Template)
-				n.Contents[message.Language] = string(p.Template)
-				return nil
-			}
-		} else {
-			for k, v := range cts {
-				n.Contents[k] = v
-			}
-			return nil
-		}
-	}
-
 	for _, l := range langs {
 		t, err := man.Template(message.Event, l, "push")
 		if err != nil {
@@ -131,8 +115,8 @@ func putContent(n *notification, message *notificationpb.Message, man template.M
 		}
 		n.Contents[l] = s
 	}
-	for _, l := range man.Languages(message.Event, "push.tt") {
-		t, err := man.Template(message.Event, l, "push.tt")
+	for _, l := range man.Languages(message.Event, "tit") {
+		t, err := man.Template(message.Event, l, "tit")
 		if err != nil {
 			return err
 		}
@@ -142,7 +126,33 @@ func putContent(n *notification, message *notificationpb.Message, man template.M
 		}
 		n.Headings[l] = s
 	}
-
+	if len(p.Template) > 0 {
+		cts := make(map[string]string)
+		if err := json.Unmarshal(p.Template, &cts); err != nil {
+			if len(langs) == 0 {
+				t, e := template.NewTemplate(string(p.Template), false)
+				if e != nil {
+					return e
+				}
+				s, _ := t.String(data)
+				n.Contents["en"] = s
+				n.Contents[message.Language] = s
+				return nil
+			}
+		} else {
+			for k, v := range cts {
+				t, e := template.NewTemplate(string(v), false)
+				if e != nil {
+					continue
+				}
+				n.Contents[k], _ = t.String(data)
+			}
+			if _, ok := n.Contents["en"]; !ok {
+				n.Contents["en"] = ""
+			}
+			return nil
+		}
+	}
 	return nil
 }
 

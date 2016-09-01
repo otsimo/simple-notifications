@@ -1,0 +1,145 @@
+syntax = "proto3";
+package otsimo;
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/otsimo/otsimopb/datasetmodels.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = true;
+option go_package = "pipelinepb";
+
+message FlowIn {
+    // Payload comes from previous stub or link
+    bytes payload = 1;
+    // Data is a dataset created by analytics service
+    apipb.DataSet data = 2;
+    // IDs keeps ids like user_id, child_id, comes from previous stup
+    map<string, string> ids = 3;
+    // Config is special to a stub
+    bytes config = 4;
+    // Action
+    string action = 5;
+    // TimestampNano is the UTC start time of pipeline in UnixNano
+    int64 timestamp_nano = 6;
+}
+
+message FlowOut {
+    // Payload goes to next stub
+    bytes payload = 1;
+    // Data is a dataset created by analytics service
+    apipb.DataSet data = 2;
+    // IDs keeps ids like user_id, child_id, it passes to next stup
+    map<string, string> ids = 3;
+}
+
+message Link {
+    enum Kind {
+        DIRECT = 0;
+        SCRIPT = 1;
+    }
+    Kind kind = 1;
+    bytes script = 2;
+    string links_from = 3;
+}
+enum Feed {
+    SINGLE = 0;
+    FANOUT = 1;
+    FANIN = 2;
+}
+
+message Stub {
+    string stub_name = 1;
+    string service_name = 2;
+    string service_action = 3;
+    bytes config = 4;
+    Feed feed = 5;
+    Link link = 6;
+}
+
+message ManualTrigger {
+}
+
+message WebhookTrigger {
+    //todo: security
+}
+
+message CronTrigger {
+    string schedule = 1;
+}
+
+message Pipe {
+    string name = 1;
+    oneof trigger {
+        ManualTrigger manual = 2;
+        WebhookTrigger webhook = 3;
+        CronTrigger cron = 4;
+    }
+    int32 success_count = 6;
+    int32 error_count = 7;
+    bool disabled = 8;
+    repeated Stub stubs = 9;
+    int64 created_at = 10;
+    int64 updated_at = 11;
+}
+
+message PodServiceAction {
+    string name = 1;
+    string description = 2;
+    repeated Feed feeds = 3;
+}
+
+message PodServiceConnection {
+    string url = 1;
+    bool secure = 2;
+    bool insecure_skip_tls_verify = 3;
+    string certificate_authority = 4;
+    string client_certificate = 5;
+    string client_key = 6;
+    int32 dial_timeout = 7;
+    int32 backoff_max_delay = 8;
+}
+
+message PodService {
+    string name = 1;
+    string description = 2;
+    PodServiceConnection connection = 3;
+    repeated PodServiceAction actions = 4;
+    bool disabled = 5;
+    int64 created_at = 6;
+    int64 updated_at = 7;
+}
+
+//Execution
+message Execution {
+    enum State {
+        // Execution not started
+        NOT_STARTED = 0;
+        // Execution is started and waiting to complete
+        RUNNING = 1;
+        // Execution is completed,
+        COMPLETED = 2;
+        // Execution is failed and will retry
+        FAILED = 3;
+    }
+    message StubExecution{
+        string stub_name = 1;
+        string output = 2;
+    }
+    //ID of this execution
+    string id = 1;
+    //Name of the pipe
+    string pipe = 2;
+    //State of the execution
+    State state = 3;
+    //When this execution is started
+    int64 started_at = 4;
+    //When last time state changed
+    int64 state_changed_at = 5;
+    //Which trigger started the execution
+    string trigger = 6;
+    //Results are the result of each executed stub
+    repeated StubExecution results = 7;
+}

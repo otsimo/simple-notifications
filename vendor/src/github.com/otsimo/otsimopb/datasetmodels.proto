@@ -1,0 +1,55 @@
+syntax = "proto3";
+package apipb;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+message Column {
+    enum Type {
+        STRING = 0;
+        INTEGER = 1;
+        REAL = 2;
+        DATE = 3;
+        DATE_TIME = 4; 
+        TIME_OF_DAY = 5;
+    }
+    Type type = 1;
+    string name = 2;
+}
+
+message TimeOfDay{
+    int32 hours = 1;
+    int32 minutes = 2;
+    int32 seconds = 3;
+    int32 milliseconds = 4;
+}
+
+message RowValue{
+    oneof value {
+        string str = 1;
+        int32 int = 2;
+        float real = 3;
+        int64 date = 4;
+        int64 date_of_time = 5;
+        TimeOfDay time_of_day = 6;
+    };
+}
+
+message Row {
+    repeated RowValue values = 1;
+}
+
+message DataSet {
+    string label = 1;
+    repeated Column columns = 5;
+    repeated Row rows = 6;
+}

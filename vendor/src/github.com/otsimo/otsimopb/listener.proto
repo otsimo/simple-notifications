@@ -1,0 +1,124 @@
+syntax = "proto3";
+package apipb;
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "otsimopb";
+option objc_class_prefix = "OTS";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+message DeviceInfo{
+    string vendorId = 1;
+    string clientSdk = 2;
+    string bundleIdentifier = 3;
+    string bundleVersion = 4;
+    string bundleShortVersion = 5;
+    string deviceType = 6;
+    string deviceName = 7;
+    string osName = 8;
+    string systemVersion = 9;
+    string languageCode = 10;
+    string countryCode = 11;
+}
+
+message GameInfo{
+    string id = 1;
+    string version = 2;
+    string language = 3;
+}
+
+// Points are represented as latitude-longitude pairs in the E7 representation
+// (degrees multiplied by 10**7 and rounded to the nearest integer).
+// Latitudes should be in the range +/- 90 degrees and longitude should be in
+// the range +/- 180 degrees (inclusive).
+message Point {
+  int32 latitude = 1;
+  int32 longitude = 2;
+}
+
+message Event{
+    //UserId is profile id or child id 
+    string user_id = 1;
+    //Child is secondary id  
+    string child_id = 2;  
+    //Event the event name
+    string event = 3;
+    //Timestamp is seconds unix time
+    int64 timestamp = 4;
+    //Game is the game information
+    GameInfo game = 5;    
+    //Device is device information,
+    DeviceInfo device = 6;
+    //AppId is the client app id
+    string app_id = 7;
+    //Loc is the location of user
+    Point loc = 8;
+    //EventId is Client side event id in order to track whether event is delivered successfully
+    string event_id = 9;
+    //IsResend is true if client is trying to send a failed event
+    bool is_resend = 10;
+    //Payload is a json data
+    bytes payload = 11;
+}
+
+message AppEventData{
+    string event = 1;
+    string app_id = 2;
+    DeviceInfo device = 3;
+    int64 timestamp = 4;
+    bytes payload = 5;
+    Point loc = 6;
+    //EventId is Client side event id in order to track whether event is delivered successfully
+    string event_id = 7;
+    //IsResend is true if client is trying to send a failed event
+    bool is_resend = 8;
+    //UserId is profile id or child id 
+    string user_id = 9;
+}
+
+message BatchEventData{
+    //Event the event name
+    string event = 1;
+    //EventId is Client side event id in order to track whether event is delivered successfully
+    string event_id = 2;
+    //Timestamp is seconds unix time
+    int64 timestamp = 3;
+    //Game is the game information
+    GameInfo game = 4;    
+    //Loc is the location of user
+    Point loc = 5;
+    //IsResend is true if client is trying to send a failed event
+    bool is_resend = 6;
+    //Payload is a json data
+    bytes payload = 7;
+}
+
+message BatchEvent{
+    //UserId is profile id or child id 
+    string user_id = 1;
+    //Child is secondary id  
+    string child_id = 2;  
+    //AppId is the client app id
+    string app_id = 3;
+    //Device is device information,
+    DeviceInfo device = 4;
+    //Data is 
+    repeated BatchEventData data = 5;
+}
+
+message EventResponse{
+    string event_id = 1;
+    bool success = 2;
+}
+
+// Listener Service
+service ListenerService{
+    rpc AppEvent(AppEventData) returns(EventResponse);
+    rpc CustomEvent(stream Event) returns (stream EventResponse);
+}

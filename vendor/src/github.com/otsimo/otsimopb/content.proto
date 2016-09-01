@@ -1,0 +1,73 @@
+syntax = "proto3";
+package apipb;
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option go_package = "otsimopb";
+option objc_class_prefix = "OTS";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+message Content {
+    string slug = 1;
+    string title = 2;
+    string language = 3;    
+    int64 date = 4;
+    bool draft = 5; 
+    string written_at = 6;
+    string author = 7;   
+    string category = 8;
+    string url = 9;
+    int32 weight = 10;
+    repeated string keywords = 11;
+    int32 category_weight = 12;
+    bytes markdown = 13;
+}
+
+//Request-Response
+
+message ContentListRequest{
+    enum ListStatus {
+        BOTH = 0;
+        ONLY_DRAFT = 1;
+        ONLY_APPROVED = 2;
+    }
+    enum SortBy {
+        WEIGHT = 0;
+        TIME = 1;
+    }
+    enum SortOrder{
+        DSC = 0;
+        ASC = 1;        
+    }
+    ListStatus status = 1;
+    int32 limit = 2;
+    string category = 3;
+    int32 offset = 4;
+    string language = 5;
+    bool only_html_url = 6;
+    SortBy sort = 7;
+    SortOrder order = 8;
+    string profile_id = 10;
+    string client_version = 11;
+    repeated string categories = 12;
+    repeated string except_categories = 13;
+}
+
+message ContentListResponse{
+    repeated Content contents = 1;
+    int32 asset_version = 2;
+}
+
+message ContentGetRequest{
+    string slug = 1;
+}
+
+service ContentService{
+    rpc List(ContentListRequest) returns (ContentListResponse);
+    rpc Get(ContentGetRequest) returns (Content);
+}

@@ -1,0 +1,54 @@
+syntax = "proto3";
+package apipb;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option objc_class_prefix = "OTS";
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+message EmitRequest{
+    string profile_id = 1;
+    WatchEvent event = 2;
+}
+
+message EmitResponse{
+    //TODO add something    
+}
+
+message WatchRequest {
+    //profile id is for Create request
+    string profile_id = 2;
+}
+
+message WatchEvent {
+    enum EventType {
+        PROFILE_UPDATED = 0;
+        CHILD_UPDATED = 1;
+        CHILD_GAMES_UPDATED = 2;
+        CHILD_SOUND_UPDATED = 3;
+    }
+    EventType type = 1;
+    string profile_id = 2;
+    string child_id = 3;
+    string game_id = 4;
+}
+
+message WatchResponse {
+    bool created = 1;
+    bool canceled = 2;
+    WatchEvent event = 3;
+}
+
+// Watch Service is necessary for realtime mobile updates
+service WatchService {   
+    rpc Emit(EmitRequest)returns(EmitResponse);
+    rpc Watch(WatchRequest) returns (stream WatchResponse);
+}

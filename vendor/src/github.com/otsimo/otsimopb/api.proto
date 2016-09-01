@@ -1,0 +1,36 @@
+syntax = "proto3";
+package apipb;
+
+import "messages.proto";
+import "models.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "otsimopb";
+option objc_class_prefix = "OTS";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+// API Service
+service ApiService {
+    // Profile
+    rpc AddProfile(Profile) returns (Response){}
+    rpc GetProfile(GetProfileRequest) returns (Profile){}
+    rpc UpdateProfile(Profile) returns (Response){}
+    
+    // Child
+    rpc AddChild(Child) returns (Response){}
+    rpc GetChild(GetChildRequest) returns (Child){}
+    rpc UpdateChild(Child) returns (Response){}
+    rpc GetChildren(GetChildrenFromProfileRequest) returns (GetChildrenFromProfileResponse){}
+    rpc UpdateGameEntry(GameEntryRequest)returns(Response){}
+    rpc ChangeActivation(ChangeChildActivationRequest)returns(Response);
+    rpc GetDisabledChildren(GetChildrenFromProfileRequest)returns(GetChildrenFromProfileResponse);
+    rpc SoundEnable(SoundEnableRequest) returns (Response);
+    rpc UpdateGameIndices(UpdateIndecesRequest) returns (Child);
+}

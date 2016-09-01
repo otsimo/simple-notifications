@@ -1,0 +1,49 @@
+syntax = "proto3";
+package apipb;
+
+import "messages.proto";
+import "models.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+option objc_class_prefix = "OTS";
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+message AllGameReleases{
+    message MiniRelease {
+        string version = 1;
+        int64 released_at = 2;
+        ReleaseState release_state = 3;
+    }
+    string game_id = 1;
+    repeated MiniRelease releases = 2; 
+}
+
+// Registry Service
+service RegistryService {
+    // Get returns game
+    rpc Get(GetGameRequest) returns (Game);
+    // GetRelease returns GameRelease by given game id and version
+    rpc GetRelease(GetGameReleaseRequest) returns (GameRelease);
+    // Publish tries to create a new GameRelease by given manifest
+    rpc Publish(GameManifest) returns (PublishResponse){}
+    // ChangeReleaseState changes state of a release, If user is admin than s/he can change 
+    // from WAITING to REJECTED or VALIDATED, developers can change to any except VALIDATED
+    rpc ChangeReleaseState(ValidateRequest) returns (Response){}
+    //GetLatestVersions returns latest versions of given game ids
+    rpc GetLatestVersions(GetLatestVersionsRequest) returns (GameVersionsResponse){}
+    //Search does search 
+    rpc Search(SearchRequest) returns (SearchResponse){}     
+    //ListGames returns all games
+    rpc ListGames(ListGamesRequest) returns (stream ListItem);
+    // AllReleases returns all releases of the given game
+    rpc AllReleases(GetGameRequest) returns (AllGameReleases);
+}
+
+

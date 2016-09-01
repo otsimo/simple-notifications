@@ -29,6 +29,7 @@ test:
 
 proto:
 	sh notificationpb/proto.sh
+	sh src/pipelinepb/proto.sh
 
 clean:
 	rm -rf bin

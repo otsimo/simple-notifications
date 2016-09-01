@@ -1,0 +1,26 @@
+syntax = "proto3";
+package otsimo;
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "flow.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_enum_prefix_all) = false;
+option go_package = "pipelinepb";
+
+service Pod {
+    rpc Single (FlowIn) returns (FlowOut);
+    rpc FanOut (FlowIn) returns (stream FlowOut);
+    rpc FanIn  (stream FlowIn) returns (FlowOut);
+    rpc Test  (TestRequest) returns (TestResponse);
+}
+
+message TestRequest{
+}
+
+message TestResponse{
+    repeated PodServiceAction actions = 1;
+}

@@ -1,0 +1,164 @@
+syntax = "proto3";
+package apipb;
+
+import "models.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option objc_class_prefix = "OTS";
+option go_package = "otsimopb";
+option java_package = "com.otsimo.grpc";
+option java_multiple_files = true;
+
+// Request and Responses
+
+enum RequestReleaseState{
+    PRODUCTION_STATE = 0;
+    ALL_STATES = 1;    
+}
+
+message GetProfileRequest{
+    string id = 1;
+    string email = 2;
+}
+
+message GetChildRequest{
+    string child_id = 1;
+}
+
+message GetChildrenFromProfileRequest{
+    string profile_id = 1;
+}
+
+message ChangeChildActivationRequest{
+    string child_id = 1;
+    bool active = 2;
+}
+
+message GetChildrenFromProfileResponse{
+    repeated Child children = 1;
+}
+
+message GetGameReleaseRequest{
+    string game_id = 1;
+    string version = 2;             //whether version or state must be entered
+    RequestReleaseState state = 3;  //default value is production 
+}
+
+message SoundEnableRequest{
+    string child_id = 1;
+    string profile_id = 2;
+    bool enable = 3;
+}
+
+message GameEntryRequest{
+    enum RequestType{
+        ADD = 0;
+        ACTIVATE = 1;
+        DEACTIVATE = 2;
+        SETTINGS = 3;
+        INDEX = 4;
+    }
+    string child_id = 1;
+    string game_id = 2;
+    RequestType type = 3;
+    bytes settings = 4;
+    int32 index = 5;
+}
+
+message PublishResponse{
+    int32 type = 1;
+    string message = 2;
+    UploadToken token = 3;
+}
+
+message ValidateRequest{
+    string game_id = 1;
+    string game_version = 2;
+    ReleaseState new_state = 3; //only admins can change to validated state, and only developers can change to others
+}
+
+message UpdateIndecesRequest {
+    string profile_id = 1;
+    string child_id = 2;
+    repeated string game_ids = 3;    
+}
+
+//Get game by game_id or unique_name
+message GetGameRequest{
+    string unique_name = 1;
+    string game_id = 2;
+}
+
+message ListGamesRequest{
+    enum InnerState{
+        ANY = 0;
+        CREATED = 1;
+        DEVELOPMENT = 2;
+        WAITING = 3;
+        REJECTED = 4;
+        VALIDATED = 5;
+        PRODUCTION = 6;    
+    }
+    InnerState release_state = 1;
+    int32 limit = 2;   
+    int32 offset = 3;
+}
+
+message ListItem {
+    string game_id = 1;
+    string unique_name = 2;
+    string latest_version = 3;
+    ReleaseState latest_state = 4;
+    string production_version = 5;
+    string storage = 6;           
+    string archive_format = 7;   
+    int64 released_at = 8;
+    repeated string languages = 9;
+}
+
+message GetLatestVersionsRequest{
+    RequestReleaseState state = 1; //Default State is PRODUCTION
+    repeated string game_ids = 2;
+}
+
+message GameAndVersion{
+    string game_id = 1;
+    string version = 2;
+    string tarball_url = 3;
+}
+
+message GameVersionsResponse{
+    repeated GameAndVersion results = 1;
+}
+
+//Search Service
+message IndexRequest{
+}
+
+message SearchResult{
+    string game_id = 1;
+    double score = 2;
+}
+
+
+message SearchRequest{
+    string query = 1;
+    RequestReleaseState state = 2; //Default State is PRODUCTION    
+}
+
+message SearchResponse{
+    int32 type = 1;    
+    repeated SearchResult results = 2;
+}
+
+// Common
+message Response{
+    int32 type = 1;
+    string message = 2;
+}
+
+
