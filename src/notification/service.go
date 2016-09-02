@@ -36,11 +36,13 @@ func (server *Server) send(ctx context.Context, in *pb.Message, ch chan<- driver
 }
 
 func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.SendMessageResponse, error) {
-	logrus.Debugf("SendMessage with event='%s' and language='%s' to #%d target(s)", in.Event, in.Language, len(in.Targets))
+	if in.Language == "" {
+		in.Language = server.Config.DefaultLanguage
+	}
+	n := len(in.Targets)
+	logrus.Debugf("SendMessage with event='%s' and language='%s' to #%d target(s)", in.Event, in.Language, n)
 	results := make([]*pb.MessageTargetResponse, 0)
 	ch := make(chan drivers.DriverResult, 1)
-	n := len(in.Targets)
-
 	go server.send(ctx, in, ch)
 
 	for i := 0; i < n; i++ {
