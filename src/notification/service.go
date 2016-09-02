@@ -54,6 +54,11 @@ func (server *Server) SendMessage(ctx context.Context, in *pb.Message) (*pb.Send
 		}
 		results = append(results, resp)
 	}
+	if logrus.GetLevel() >= logrus.DebugLevel {
+		for _, t := range results {
+			logrus.Debugf("SendMessage output[%s]= %s", t.Target, t.Output)
+		}
+	}
 	return pb.NewMessageResponse(results), nil
 }
 

@@ -41,7 +41,7 @@ func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	if sender := config["defaultFromName"]; sender != nil {
 		d.DefaultFromName = sender.(string)
 	}
-	logrus.WithField("driver", SendGridDriverName).Errorf("initialized")
+	logrus.WithField("driver", SendGridDriverName).Info("initialized")
 	return d, nil
 }
 

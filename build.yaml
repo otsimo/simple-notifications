@@ -1,0 +1,17 @@
+version: 0.4
+outputdir: ./bin
+scripts:
+  fmt: goimports -w src
+projects:
+  - name: notification
+    type: go
+    root: src/cmd/notification
+    imageName: gcr.io/otsimocloud/sns
+    dockerfile: ./Dockerfile
+    before: cp config.yml $OUT_PATH
+    run: ./notification --debug
+    golang:
+      package: cmd/notification
+      cgoEnabled: false
+      ldflags: "-w -X main.Version=${BUILD_VERSION}"
+      builder: gb

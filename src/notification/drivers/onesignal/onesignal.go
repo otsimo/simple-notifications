@@ -31,7 +31,7 @@ func newDriver(config map[string]interface{}) (drivers.Driver, error) {
 	if a, ok := config["authorization"]; ok {
 		d.authorization = a.(string)
 	}
-	logrus.WithField("driver", DriverName).Errorf("initialized")
+	logrus.WithField("driver", DriverName).Info("initialized")
 	return d, nil
 }
 
