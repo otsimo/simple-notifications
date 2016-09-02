@@ -25,11 +25,18 @@ func main() {
 	}
 	defer conn.Close()
 	c := pb.NewNotificationServiceClient(conn)
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, _ := context.WithTimeout(context.Background(), time.Second * 5)
 	sr, _ := c.Scan(context.Background(), &pb.ScanRequest{})
 	log.Printf("Scan %v:", sr.Events)
+	for _, e := range sr.Events {
+		log.Println(e.Name)
+		for _, t := range e.Templates {
+			log.Printf("%s: %s = %v", e.Name, t.Suffix, t.Languages)
+		}
+	}
+
 	message := &pb.Message{
-		Event:    "welcome",
+		Event:    "verify-email",
 		Language: "en",
 		Tags:     map[string]string{"user_id": "b5980760-dc0b-4ed9-9aa5-489c85c5fa5e"},
 		DataJson: pb.Map2Str(map[string]interface{}{

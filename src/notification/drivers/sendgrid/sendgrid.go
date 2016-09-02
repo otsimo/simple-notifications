@@ -124,9 +124,12 @@ func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Messa
 	}
 	var err error
 	email.Subject, _, err = templateString(data, m.TemplateSub, message, man, "sub", false)
-	if err != nil {
+	if err != nil && m.Subject == "" {
 		ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: errors.New("failed to create subject text")}
 		return
+	}
+	if email.Subject == "" {
+		email.Subject = m.Subject
 	}
 	var html string
 	var set bool
@@ -164,6 +167,7 @@ func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Messa
 			return
 		}
 		if r.StatusCode >= 300 {
+			logrus.Debugf("failed to send mail: body was %v", email)
 			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: fmt.Errorf(r.Body)}
 		} else {
 			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: nil}
