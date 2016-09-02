@@ -167,7 +167,8 @@ func (d *SendGridDriver) Send(ctx context.Context, message *notificationpb.Messa
 			return
 		}
 		if r.StatusCode >= 300 {
-			logrus.Debugf("failed to send mail: body was %v", email)
+			b, _ := json.Marshal(email)
+			logrus.Debugf("failed to send mail: body was %s", string(b))
 			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: fmt.Errorf(r.Body)}
 		} else {
 			ch <- drivers.DriverResult{Type: drivers.TypeEmail, Err: nil}

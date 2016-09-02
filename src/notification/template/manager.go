@@ -81,6 +81,9 @@ func (m *manager) Languages(event, suffix string) []string {
 }
 
 func (m *manager) Template(event, lang, suffix string) (Template, error) {
+	if lang == "" {
+		lang = m.defaultLang
+	}
 	t, err := m.templateFile(event, lang, suffix)
 	if err != nil {
 		lang = m.defaultLang

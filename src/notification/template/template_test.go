@@ -120,6 +120,21 @@ func TestSearchTemplates(t *testing.T) {
 			revent:  "abc",
 			rlang:   "tr",
 			err:     nil,
+		},{
+			defaultLang: "en",
+			templates: []testTemplate{{
+				event: "abc",
+				files: []string{"en.html", "tr.html", "en.push", "tr.push"},
+			}, {
+				event: "xyz",
+				files: []string{"en.html", "tr.html", "en.push", "tr.push"},
+			}},
+			tevent:  "abc",
+			tlang:   "",
+			tsuffix: "html",
+			revent:  "abc",
+			rlang:   "en",
+			err:     nil,
 		},
 	}
 

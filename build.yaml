@@ -6,9 +6,9 @@ projects:
   - name: notification
     type: go
     root: src/cmd/notification
-    imageName: gcr.io/otsimocloud/sns
+    imageName: gcr.io/otsimocloud/notification
     dockerfile: ./Dockerfile
-    before: cp config.yml $OUT_PATH
+    after: cp config.yml $OUT_PATH/config.yml
     run: ./notification --debug
     golang:
       package: cmd/notification
