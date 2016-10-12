@@ -10,6 +10,7 @@ import (
 
 	"encoding/json"
 
+	"bytes"
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/jsonpb"
 	"golang.org/x/net/context"
@@ -82,18 +83,32 @@ func (server *Server) FanIn(pipelinepb.Pod_FanInServer) error {
 }
 
 func (server *Server) Test(context.Context, *pipelinepb.TestRequest) (*pipelinepb.TestResponse, error) {
-	return &pipelinepb.TestResponse{}, nil
+	return &pipelinepb.TestResponse{
+		Actions: []*pipelinepb.PodServiceAction{{
+			Name:        "default",
+			Description: "Send email, push notification or sns, data comes from payload or config",
+			Feeds:       []pipelinepb.Feed{pipelinepb.Feed_SINGLE},
+		}, {
+			Name:        ActionPayloadIsMessage,
+			Description: "Send email, push notification or sns, data comes from payload",
+			Feeds:       []pipelinepb.Feed{pipelinepb.Feed_SINGLE},
+		}, {
+			Name:        ActionConfigIsMessage,
+			Description: "Send email, push notification or sns, data comes from config",
+			Feeds:       []pipelinepb.Feed{pipelinepb.Feed_SINGLE},
+		}},
+	}, nil
 }
 
 func (server *Server) Single(ctx context.Context, in *pipelinepb.FlowIn) (*pipelinepb.FlowOut, error) {
 	mes := &pb.Message{}
 	switch in.Action {
 	case ActionPayloadIsMessage:
-		if err := jsonpb.UnmarshalString(string(in.Payload), mes); err != nil {
+		if err := in.UnmarshalProtoPayload(mes); err != nil {
 			return nil, err
 		}
 	case ActionConfigIsMessage:
-		if err := jsonpb.UnmarshalString(string(in.Config), mes); err != nil {
+		if err := jsonpb.Unmarshal(bytes.NewReader(in.Config), mes); err != nil {
 			return nil, err
 		}
 		mes.DataJson = in.Payload
@@ -106,7 +121,31 @@ func (server *Server) Single(ctx context.Context, in *pipelinepb.FlowIn) (*pipel
 			}
 		}
 	default:
-		return nil, grpc.Errorf(codes.InvalidArgument, "unknown action %s", in.Action)
+		isPayloadConfig := len(in.Payload) > 0
+		if isPayloadConfig {
+			if err := in.UnmarshalProtoPayload(mes); err != nil {
+				isPayloadConfig = false
+			} else {
+				isPayloadConfig = len(mes.Event) == 0
+			}
+		}
+		if !isPayloadConfig {
+			if err := jsonpb.Unmarshal(bytes.NewReader(in.Config), mes); err != nil {
+				return nil, err
+			}
+			if mes.Event == "" {
+				return nil, errors.New("invalid config")
+			}
+			mes.DataJson = in.Payload
+			tt := struct {
+				ScheduleAt int64 `json:"scheduleAt"`
+			}{}
+			if err := json.Unmarshal(in.Payload, &tt); err == nil {
+				if tt.ScheduleAt > 0 {
+					mes.ScheduleAt = tt.ScheduleAt
+				}
+			}
+		}
 	}
 	if mes.Tags == nil {
 		mes.Tags = make(map[string]string)

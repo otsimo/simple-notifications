@@ -43,6 +43,9 @@ func (f *FlowIn) Out() *FlowOut {
 	fo.Payload = fi.Payload
 	return fo
 }
+func (f *FlowIn) UnmarshalProtoPayload(pb proto.Message) error {
+	return jsonpb.Unmarshal(bytes.NewReader(f.Payload), pb)
+}
 
 func (f *FlowOut) SetPayload(p []byte) *FlowOut {
 	f.Payload = p
