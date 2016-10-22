@@ -161,7 +161,10 @@ func (o *oneSignalDrv) Send(ctx context.Context, message *notificationpb.Message
 	m := o.notification()
 	if uid, ok := message.Tags["user_id"]; ok {
 		m.addTagFilter("userid", uid)
+	} else if len(p.To) > 0 {
+		m.addTagFilter("userid", p.To[0])
 	}
+
 	if env, ok := message.Tags["env"]; ok {
 		m.addTagFilter("env", env)
 	}
