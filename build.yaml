@@ -10,6 +10,17 @@ projects:
     dockerfile: ./Dockerfile
     after: cp config.yml $OUT_PATH/config.yml
     run: ./notification --debug
+    develop:
+      keepdata: false
+      ports:
+        - "30844:18844"
+      apply:
+        - bin/config.yaml
+      configs:
+        - config-sns
+      env:
+        - NOTIFICATION_CONFIG=${[OBM_CONFIG_PATH]}/config-sns/config.json
+        - NOTIFICATION_DEBUG=1
     golang:
       package: cmd/notification
       cgoEnabled: false
