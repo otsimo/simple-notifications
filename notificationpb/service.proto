@@ -38,6 +38,7 @@ message Push {
     repeated string to = 1;
     //Template overrides default template file
     bytes template = 2;
+    string launch_url = 3;
 }
 
 message Target {

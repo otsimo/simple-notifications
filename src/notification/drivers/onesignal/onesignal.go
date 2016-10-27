@@ -71,6 +71,7 @@ type notification struct {
 	SendAfter        string            `json:"send_after,omitempty"`
 	Filters          []filter          `json:"filters,omitempty"`
 	IncludePlayerIDs []string          `json:"include_player_ids,omitempty"`
+	Url              string            `json:"url:omitempty"`
 }
 
 func (n *notification) addTagFilter(key, value string) {
@@ -173,6 +174,9 @@ func (o *oneSignalDrv) Send(ctx context.Context, message *notificationpb.Message
 	}
 	if message.ScheduleAt > 0 {
 		m.SendAfter = time.Unix(message.ScheduleAt, 0).UTC().String()
+	}
+	if p.LaunchUrl > "" {
+		m.Url = p.LaunchUrl
 	}
 	if err := putContent(&m, message, man); err != nil {
 		ch <- drivers.DriverResult{Type: drivers.TypePush, Err: err}
