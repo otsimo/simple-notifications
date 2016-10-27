@@ -39,6 +39,7 @@ message Push {
     //Template overrides default template file
     bytes template = 2;
     string launch_url = 3;
+    bytes headings = 4;
 }
 
 message Target {
